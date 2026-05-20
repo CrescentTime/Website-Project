@@ -1,0 +1,166 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" version="29.6.6">
+  <diagram name="Page-1" id="6ijicBwZMBhrdiFbjUEv">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-1" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="Website:Object" vertex="1">
+          <mxGeometry height="580" width="100" x="314.07" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-2" parent="b4h1d0cu8Q3Mp0M_InWX-1" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="480" width="10" x="45" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-3" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" target="b4h1d0cu8Q3Mp0M_InWX-2" value="Writes a review in product page">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="274.07" y="120" />
+            </Array>
+            <mxPoint x="189.07" y="120" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-4" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};participant=umlActor;" value="" vertex="1">
+          <mxGeometry height="580" width="20" x="179.07" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-5" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" value="Verifies existence of old review">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="454.07" y="170" />
+            </Array>
+            <mxPoint x="369.07" y="170" as="sourcePoint" />
+            <mxPoint x="539.0699999999999" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-6" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="Dataset:Object" vertex="1">
+          <mxGeometry height="580" width="100" x="494.07" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-7" parent="b4h1d0cu8Q3Mp0M_InWX-6" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
+          <mxGeometry height="290" width="10" x="45" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-12" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" value="Denies existence">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="464.07" y="410.0000000000001" />
+            </Array>
+            <mxPoint x="539.0699999999999" y="410" as="sourcePoint" />
+            <mxPoint x="369.07" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-19" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;" value="Alt" vertex="1">
+          <mxGeometry height="360" width="511.7" x="78.3" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-20" edge="1" parent="1" source="b4h1d0cu8Q3Mp0M_InWX-19" style="endArrow=none;dashed=1;html=1;rounded=0;entryX=1.004;entryY=0.461;entryDx=0;entryDy=0;entryPerimeter=0;exitX=-0.004;exitY=0.455;exitDx=0;exitDy=0;exitPerimeter=0;" target="b4h1d0cu8Q3Mp0M_InWX-19" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="74.51999999999998" y="270" as="sourcePoint" />
+            <mxPoint x="742.6500000000001" y="271.39999999999986" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-22" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" value="Updates page">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="285" y="600.0000000000001" />
+            </Array>
+            <mxPoint x="360.00000000000006" y="600" as="sourcePoint" />
+            <mxPoint x="189.99999999999997" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-24" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="If user has submitted a review previously for the product" vertex="1">
+          <mxGeometry height="75" width="80.93" x="89.07" y="255" as="geometry" />
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-25" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Else" vertex="1">
+          <mxGeometry height="30" width="90" x="84.53999999999999" y="385" as="geometry" />
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-27" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" value="Presses submit">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="275" y="140" />
+            </Array>
+            <mxPoint x="190" y="140" as="sourcePoint" />
+            <mxPoint x="359.93" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-29" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" value="Confirms existence">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="465" y="240.0000000000001" />
+            </Array>
+            <mxPoint x="540" y="240" as="sourcePoint" />
+            <mxPoint x="370" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-30" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" value="Requests permission to overwrite">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="260" />
+              <mxPoint x="265.93" y="270" />
+            </Array>
+            <mxPoint x="359.06999999999994" y="259.9999999999999" as="sourcePoint" />
+            <mxPoint x="188.880344827586" y="259.9999999999999" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-31" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" value="Confirms">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="295.19" y="280.0000000000001" />
+            </Array>
+            <mxPoint x="190.000344827586" y="280.0000000000001" as="sourcePoint" />
+            <mxPoint x="360.18999999999994" y="280.0000000000001" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-32" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" value="Delete previous review">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="455" y="300" />
+            </Array>
+            <mxPoint x="370" y="300" as="sourcePoint" />
+            <mxPoint x="540" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-33" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" value="Confirms deletion">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="465" y="320.0000000000001" />
+            </Array>
+            <mxPoint x="540" y="320" as="sourcePoint" />
+            <mxPoint x="370" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-34" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" value="Add new review">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="455" y="350" />
+            </Array>
+            <mxPoint x="370" y="350" as="sourcePoint" />
+            <mxPoint x="540" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-35" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" value="Confirms addition">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="465" y="374.66000000000014" />
+            </Array>
+            <mxPoint x="540" y="374.66" as="sourcePoint" />
+            <mxPoint x="370" y="374.66" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-36" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" value="Add new review">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="455" y="430" />
+            </Array>
+            <mxPoint x="370" y="430" as="sourcePoint" />
+            <mxPoint x="540" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b4h1d0cu8Q3Mp0M_InWX-37" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" value="Confirms addition">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="465" y="460.0000000000001" />
+            </Array>
+            <mxPoint x="540" y="460" as="sourcePoint" />
+            <mxPoint x="370" y="460" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
