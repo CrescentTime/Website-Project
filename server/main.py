@@ -159,7 +159,11 @@ def purchase_products(confirmation: bool):
     if confirmation:
         for product in users[logged_user[0]][3]:
             users[logged_user[0]][5].append(product)
+            if product in users[logged_user[0]][2]:
+                users[logged_user[0]][2].remove(product)
         users[logged_user[0]][3] = []
         return {'Successfully purchased products.'}
     else:
         return {'Canceled transaction.'}
+
+
