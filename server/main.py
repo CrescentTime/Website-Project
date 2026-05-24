@@ -33,9 +33,9 @@ async def create_user(user: CreateUser, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     return new_user'''
-users = {1: ['rex', 'a', [1], []]}
+users = {1: ['rex', 'a', [1], [], {}, [], []]}
 logged_user = [None]
-products = {1: 'appple'}
+products = {1: ['appple', {1: 'great'}]}
 
 @app.post('/users')
 def create_user(user: CreateUser):
@@ -81,6 +81,8 @@ def show_wishlist():
 def add_to_wishlist(product_id: int):
     if logged_user[0] is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
+    if product_id in users[logged_user[0]][2]:
+        raise HTTPException(status_code=404, detail="Product is already wishlisted.")
     users[logged_user[0]][2].append(product_id)
     return {'Successfully added product to wishlist.'
             '\nwishlist': users[logged_user[0]][2]}
@@ -90,6 +92,8 @@ def add_to_wishlist(product_id: int):
 def remove_from_wishlist(product_id: int):
     if logged_user[0] is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
+    if product_id not in users[logged_user[0]][2]:
+        raise HTTPException(status_code=404, detail="Product is not in the wishlist.")
     users[logged_user[0]][2].remove(product_id)
     return {'Successfully removed product from wishlist.'
             '\nwishlist': users[logged_user[0]][2]}
@@ -106,7 +110,9 @@ def show_cart():
 def add_to_cart(product_id: int):
     if logged_user[0] is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
-    users[logged_user[0]][2].append(product_id)
+    if product_id in users[logged_user[0]][3]:
+        raise HTTPException(status_code=404, detail="Product is already in the cart.")
+    users[logged_user[0]][3].append(product_id)
     return {'Successfully added product from cart.'
             'cart': users[logged_user[0]][3]}
 
@@ -115,7 +121,9 @@ def add_to_cart(product_id: int):
 def remove_from_cart(product_id: int):
     if logged_user[0] is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
-    users[logged_user[0]][2].remove(product_id)
+    if product_id not in users[logged_user[0]][3]:
+        raise HTTPException(status_code=404, detail="Product is not in the cart.")
+    users[logged_user[0]][3].remove(product_id)
     return {'Successfully removed product from cart.'
             'cart': users[logged_user[0]][3]}
 
@@ -127,3 +135,31 @@ def get_product(product_id: int):
     if logged_user[0] is None:
         return {'product': products[product_id], 'write review': False}
     return {'product': products[product_id], 'write review': True}
+
+
+@app.put('/products/{product_id}')
+def add_review(product_id: int, review: str):
+    if logged_user[0] is None:
+        raise HTTPException(status_code=404, detail="Not logged in.")
+    if product_id not in products.keys():
+        raise HTTPException(status_code=404, detail="Product not found.")
+    if product_id not in users[logged_user[0]][5]:
+        raise HTTPException(status_code=404, detail="Need to purchase the product before reviewing.")
+    products[product_id][1][logged_user[0]] = review
+    users[logged_user[0]][4][product_id] = review
+    return 'Successfully reviewed the product.'
+
+
+@app.post('/purchase')
+def purchase_products(confirmation: bool):
+    if logged_user[0] is None:
+        raise HTTPException(status_code=404, detail="Not logged in.")
+    if not users[logged_user[0]][3]:
+        raise HTTPException(status_code=404, detail="Cart is empty.")
+    if confirmation:
+        for product in users[logged_user[0]][3]:
+            users[logged_user[0]][5].append(product)
+        users[logged_user[0]][3] = []
+        return {'Successfully purchased products.'}
+    else:
+        return {'Canceled transaction.'}
