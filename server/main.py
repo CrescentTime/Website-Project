@@ -167,3 +167,10 @@ def purchase_products(confirmation: bool):
         return {'Canceled transaction.'}
 
 
+'''@app.post('/change password')
+def change_password(username: str|None, password: str):
+    if logged_user[0]:
+        users[logged_user[0]][1] = password
+        return {'Successfully changed password.'}
+    else:
+        if username in user'''
