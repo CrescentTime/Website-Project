@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import user
 
@@ -9,13 +10,14 @@ from database import SessionLocal
 
 app = FastAPI()
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-def get_db():
+'''def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
-        db.close()
+        db.close()'''
 
 
 @app.get("/")
@@ -33,14 +35,16 @@ async def create_user(user: CreateUser, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     return new_user'''
-users = {1: ['rex', 'a', [1], [], {}, [], []]}
+
+users = {1: ['rex', 'a', [1], [], {}, []]} # id : [name, password, wishlist, cart, review, purchases]
 logged_user = [None]
 products = {1: ['appple', {1: 'great'}]}
+
 
 @app.post('/users')
 def create_user(user: CreateUser):
     u_id = len(users)+1
-    users[u_id] = [user.username, user.password]
+    users[u_id] = [user.username, user.password, [], [], {}, [], []]
     return {'user_id': u_id, 'username': user.username, 'password': user.password}
 
 
