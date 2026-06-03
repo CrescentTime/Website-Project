@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import FastAPI, Depends, HTTPException, Cookie
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import user
 
@@ -41,6 +41,20 @@ logged_user = [None]
 products = {1: ['appple', {1: 'great'}]}
 
 
+user_db = {
+    1: {
+        "id": 1,
+        "username": "rex",
+        "hashed_password": "hashedpassa",
+    },
+    2: {
+        "id": 2,
+        "username": "zero",
+        "hashed_password": "hashedpass0",
+    }
+}
+
+
 @app.post('/users')
 def create_user(user: CreateUser):
     u_id = len(users)+1
@@ -49,14 +63,14 @@ def create_user(user: CreateUser):
 
 
 @app.get('/users/{user_id}')
-def read_user(user_id: int, q: str|None = None):
+def read_user(user_id: int, cur_cookie : str | None = Cookie(defualt=None)):
     if user_id not in users.keys():
         raise HTTPException(status_code=404, detail="User not found")
     return {'user_id': user_id, 'username': users[user_id][0]}
 
 
 @app.put('/users/{user_id}')
-def update_user(user_id: int, user: CreateUser, q: str|None=None):
+def update_user(user_id: int, user: CreateUser, cur_cookie : str | None = Cookie(defualt=None)):
     if user_id not in users.keys():
         raise HTTPException(status_code=404, detail="User not found")
     users[user_id] = [user.username, user.password]
@@ -75,14 +89,14 @@ def login(username: str, password: str):
 
 
 @app.get('/wishlist')
-def show_wishlist():
+def show_wishlist(cur_cookie : str | None = Cookie(defualt=None)):
     if logged_user[0] is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     return {'wishlist': users[logged_user[0]][2]}
 
 
 @app.put('/wishlist')
-def add_to_wishlist(product_id: int):
+def add_to_wishlist(product_id: int, cur_cookie : str | None = Cookie(defualt=None)):
     if logged_user[0] is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     if product_id in users[logged_user[0]][2]:
@@ -93,7 +107,7 @@ def add_to_wishlist(product_id: int):
 
 
 @app.delete('/wishlist')
-def remove_from_wishlist(product_id: int):
+def remove_from_wishlist(product_id: int, cur_cookie : str | None = Cookie(defualt=None)):
     if logged_user[0] is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     if product_id not in users[logged_user[0]][2]:
@@ -104,14 +118,14 @@ def remove_from_wishlist(product_id: int):
 
 
 @app.get('/cart')
-def show_cart():
+def show_cart(cur_cookie : str | None = Cookie(defualt=None)):
     if logged_user[0] is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     return {'cart': users[logged_user[0]][3]}
 
 
 @app.put('/cart')
-def add_to_cart(product_id: int):
+def add_to_cart(product_id: int, cur_cookie : str | None = Cookie(defualt=None)):
     if logged_user[0] is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     if product_id in users[logged_user[0]][3]:
@@ -122,7 +136,7 @@ def add_to_cart(product_id: int):
 
 
 @app.delete('/cart')
-def remove_from_cart(product_id: int):
+def remove_from_cart(product_id: int, cur_cookie : str | None = Cookie(defualt=None)):
     if logged_user[0] is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     if product_id not in users[logged_user[0]][3]:
@@ -133,7 +147,7 @@ def remove_from_cart(product_id: int):
 
 
 @app.get('/products/{product_id}')
-def get_product(product_id: int):
+def get_product(product_id: int, cur_cookie : str | None = Cookie(defualt=None)):
     if product_id not in products.keys():
         raise HTTPException(status_code=404, detail="Product not found.")
     if logged_user[0] is None:
@@ -142,7 +156,7 @@ def get_product(product_id: int):
 
 
 @app.put('/products/{product_id}')
-def add_review(product_id: int, review: str):
+def add_review(product_id: int, review: str, cur_cookie : str | None = Cookie(defualt=None)):
     if logged_user[0] is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     if product_id not in products.keys():
@@ -155,7 +169,7 @@ def add_review(product_id: int, review: str):
 
 
 @app.post('/purchase')
-def purchase_products(confirmation: bool):
+def purchase_products(confirmation: bool, cur_cookie : str | None = Cookie(defualt=None)):
     if logged_user[0] is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     if not users[logged_user[0]][3]:
@@ -169,6 +183,29 @@ def purchase_products(confirmation: bool):
         return {'Successfully purchased products.'}
     else:
         return {'Canceled transaction.'}
+
+
+@app.get('/login_authenticate')
+def login_authenticate(token : str = Depends(oauth2_scheme)):
+    return {'token': token}
+
+
+def decode_auth_token(token: str):
+    return ReadUser(id=9, username=token+"pluto")
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    user = decode_auth_token(token)
+    return user
+
+
+@app.get('/users/me')
+async def read_current_user(current_user: str = Depends(get_current_user)):
+    return current_user
+
+
+def fake_hash_password(password: str):
+    return "hashedpass" + password
 
 
 '''@app.post('/change password')
