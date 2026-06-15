@@ -184,7 +184,7 @@ def purchase_products(confirmation: bool, logged_id : str | None = Cookie(defaul
         return {'Canceled transaction.'}
 
 
-@app.get('/login_authenticate')
+'''@app.get('/login_authenticate')
 def login_authenticate(token : str = Depends(oauth2_scheme)):
     return {'token': token}
 
@@ -204,7 +204,7 @@ async def read_current_user(current_user: str = Depends(get_current_user)):
 
 
 def fake_hash_password(password: str):
-    return "hashedpass" + password
+    return "hashedpass" + password'''
 
 
 '''@app.post('/change password')
