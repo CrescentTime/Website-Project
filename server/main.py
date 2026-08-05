@@ -8,6 +8,8 @@ from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
 
 from database import SessionLocal
 
+import secrets
+
 app = FastAPI()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -36,9 +38,21 @@ async def create_user(user: CreateUser, db: Session = Depends(get_db)):
     db.refresh(user)
     return new_user'''
 
-users = {1: ['rex', 'a', [1], [], {}, []]} # id : [name, password, wishlist, cart, review, purchases]
+users = \
+    {1: [
+        'rex', # 0 name
+        'a',   # 1 password
+        [1],   # 2 wishlist
+        [],    # 3 cart
+        {},    # 4 reviews
+        [],    # 5 purchases
+        'rex23@email.com' # 6 email
+    ]} # id : [name, password, wishlist, cart, review, purchases, email]
 logged_user = [None]
 products = {1: ['appple', {1: 'great'}]}
+
+
+password_reset_tokens = {}
 
 
 user_db = {
@@ -58,8 +72,8 @@ user_db = {
 @app.post('/users')
 def create_user(user: CreateUser):
     u_id = len(users)+1
-    users[u_id] = [user.username, user.password, [], [], {}, [], []]
-    return {'user_id': u_id, 'username': user.username, 'password': user.password}
+    users[u_id] = [user.username, user.password, [], [], {}, [], [], user.email]
+    return {'user_id': u_id, 'username': user.username, 'password': user.password, 'email': user.email}
 
 
 @app.get('/users/{user_id}')
@@ -67,6 +81,35 @@ def read_user(user_id: int, logged_id : str | None = Cookie(default=None)):
     if user_id not in users.keys():
         raise HTTPException(status_code=404, detail="User not found")
     return {'user_id': user_id, 'username': users[user_id][0]}
+
+
+@app.get('/reset_password')
+def reset_password(username: str):
+    for key in users.keys():
+        if users[key][0] == username:
+            token = secrets.token_urlsafe(32)
+            password_reset_tokens[key] = token
+            reset_link = "http://127.0.0.1:8000/change_password?token=" + token
+            print(f"To: {users[key][6]}")
+            print(f"Link to reset password: {reset_link}")
+            break
+    return {'Sent email to reset password if the user exists.'}
+
+
+@app.put('/change_password')
+def change_password(new_password: str, logged_id: str | None = Cookie(default=None), token: str | None = ''):
+    uid = logged_id
+    if logged_id is None:
+        for key in password_reset_tokens.keys():
+            if token == password_reset_tokens[key]:
+                uid = key
+                password_reset_tokens.pop(key)
+                break
+        if uid is None:
+            raise HTTPException(status_code=404, detail="Invalid or expired reset link. "
+                                                        "Need to request password reset.")
+    users[int(uid)][1] = new_password
+    return {'Successfully changed password.'}
 
 
 '''@app.put('/users/{user_id}')
@@ -85,6 +128,12 @@ def login(username: str, password: str, response: Response):
             response.set_cookie(key = "logged_id", value = str(key))
             return {'Login Successful': True}
     raise HTTPException(status_code=404, detail="Invalid username or password. Try again.")
+
+
+@app.get('/logout')
+def logout(response: Response):
+    response.delete_cookie(key = "logged_id")
+    return {'Logout Successful': True}
 
 
 @app.get('/wishlist')
