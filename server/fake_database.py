@@ -20,7 +20,7 @@ users = \
                 3: 'Could use more interesting puzzles'
             },
             [3],              # 5 purchases
-            'rex23@email.com' # 6 email
+            'Basher@email.com' # 6 email
         ]
     } # id : [name, password, wishlist, cart, review, purchases, email]
 
