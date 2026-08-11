@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Depends, HTTPException, Cookie, Response
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import user
 
@@ -77,6 +76,8 @@ def change_password(new_password: str, logged_id: str | None = Cookie(default=No
         if uid is None:
             raise HTTPException(status_code=404, detail="Invalid or expired reset link. "
                                                         "Need to request password reset.")
+    elif int(logged_id) not in users.keys():
+        raise HTTPException(status_code=404, detail="User not found.")
     users[int(uid)][1] = new_password
     return {'Successfully changed password.'}
 
@@ -101,6 +102,8 @@ def logout(response: Response):
 def show_wishlist(logged_id : str | None = Cookie(default=None)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
+    elif int(logged_id) not in users.keys():
+        raise HTTPException(status_code=404, detail="User not found.")
     return {'wishlist': users[int(logged_id)][2]}
 
 
@@ -108,28 +111,34 @@ def show_wishlist(logged_id : str | None = Cookie(default=None)):
 def add_to_wishlist(product_id: int, logged_id : str | None = Cookie(default=None)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
+    elif int(logged_id) not in users.keys():
+        raise HTTPException(status_code=404, detail="User not found.")
     if product_id in users[int(logged_id)][2]:
         raise HTTPException(status_code=404, detail="Product is already wishlisted.")
     users[int(logged_id)][2].append(product_id)
-    return {'Successfully added product to wishlist.'
-            '\nwishlist': users[int(logged_id)][2]}
+    return {'Successfully added product to wishlist.\n'
+            'wishlist': users[int(logged_id)][2]}
 
 
 @app.delete('/wishlist')
 def remove_from_wishlist(product_id: int, logged_id : str | None = Cookie(default=None)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
+    elif int(logged_id) not in users.keys():
+        raise HTTPException(status_code=404, detail="User not found.")
     if product_id not in users[int(logged_id)][2]:
         raise HTTPException(status_code=404, detail="Product is not in the wishlist.")
     users[int(logged_id)][2].remove(product_id)
-    return {'Successfully removed product from wishlist.'
-            '\nwishlist': users[int(logged_id)][2]}
+    return {'Successfully removed product from wishlist.\n'
+            'wishlist': users[int(logged_id)][2]}
 
 
 @app.get('/cart')
 def show_cart(logged_id : str | None = Cookie(default=None)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
+    elif int(logged_id) not in users.keys():
+        raise HTTPException(status_code=404, detail="User not found.")
     return {'cart': users[int(logged_id)][3]}
 
 
@@ -137,6 +146,8 @@ def show_cart(logged_id : str | None = Cookie(default=None)):
 def add_to_cart(product_id: int, logged_id : str | None = Cookie(default=None)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
+    elif int(logged_id) not in users.keys():
+        raise HTTPException(status_code=404, detail="User not found.")
     if product_id in users[int(logged_id)][3]:
         raise HTTPException(status_code=404, detail="Product is already in the cart.")
     users[int(logged_id)][3].append(product_id)
@@ -148,6 +159,8 @@ def add_to_cart(product_id: int, logged_id : str | None = Cookie(default=None)):
 def remove_from_cart(product_id: int, logged_id : str | None = Cookie(default=None)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
+    elif int(logged_id) not in users.keys():
+        raise HTTPException(status_code=404, detail="User not found.")
     if product_id not in users[int(logged_id)][3]:
         raise HTTPException(status_code=404, detail="Product is not in the cart.")
     users[int(logged_id)][3].remove(product_id)
@@ -168,6 +181,8 @@ def get_product(product_id: int, logged_id : str | None = Cookie(default=None)):
 def add_review(product_id: int, review: str, logged_id : str | None = Cookie(default=None)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
+    elif int(logged_id) not in users.keys():
+        raise HTTPException(status_code=404, detail="User not found.")
     if product_id not in products.keys():
         raise HTTPException(status_code=404, detail="Product not found.")
     if product_id not in users[int(logged_id)][5]:
@@ -181,6 +196,8 @@ def add_review(product_id: int, review: str, logged_id : str | None = Cookie(def
 def purchase_products(confirmation: bool, logged_id : str | None = Cookie(default=None)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
+    elif int(logged_id) not in users.keys():
+        raise HTTPException(status_code=404, detail="User not found.")
     if not users[int(logged_id)][3]:
         raise HTTPException(status_code=404, detail="Cart is empty.")
     if confirmation:
