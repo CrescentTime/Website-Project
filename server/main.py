@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, Cookie, Response
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.functions import user
+#from sqlalchemy.sql.functions import user
 
 from models import User, Wishlist
 from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
@@ -35,6 +36,22 @@ async def create_user(user: CreateUser, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     return new_user'''
+
+
+@app.get('/login')
+def login(username: str, password: str, response: Response):
+    user_val = [username, password]
+    for key in users.keys():
+        if users[key][0] == user_val[0] and users[key][1] == user_val[1]:
+            response.set_cookie(key = "logged_id", value = str(key))
+            return {'Login Successful': True}, RedirectResponse("http://127.0.0.1:8000/")
+    raise HTTPException(status_code=404, detail="Invalid username or password. Try again.")
+
+
+@app.get('/logout')
+def logout(response: Response):
+    response.delete_cookie(key = "logged_id")
+    return {'Logout Successful': True}
 
 
 @app.post('/users')
@@ -93,22 +110,6 @@ def change_username(username: str, logged_id: str | None = Cookie(default=None))
             raise HTTPException(status_code=404, detail="Username is taken. Select another one.")
     users[int(logged_id)][0] = username
     return {'Successfully changed username.'}
-
-
-@app.get('/login')
-def login(username: str, password: str, response: Response):
-    user_val = [username, password]
-    for key in users.keys():
-        if users[key][0] == user_val[0] and users[key][1] == user_val[1]:
-            response.set_cookie(key = "logged_id", value = str(key))
-            return {'Login Successful': True}
-    raise HTTPException(status_code=404, detail="Invalid username or password. Try again.")
-
-
-@app.get('/logout')
-def logout(response: Response):
-    response.delete_cookie(key = "logged_id")
-    return {'Logout Successful': True}
 
 
 @app.get('/wishlist')
