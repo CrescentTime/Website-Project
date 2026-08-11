@@ -7,12 +7,11 @@ from models import User, Wishlist
 from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
 
 from database import SessionLocal
+from fake_database import users, products, password_reset_tokens
 
 import secrets
 
 app = FastAPI()
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 '''def get_db():
     db = SessionLocal()
@@ -24,7 +23,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @app.get("/")
 async def root():
-    return {"message": "API is running"}
+    return {"message": "Welcome!"}
 
 
 '''@app.post("/users")
@@ -37,36 +36,6 @@ async def create_user(user: CreateUser, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     return new_user'''
-
-users = \
-    {1: [
-        'rex', # 0 name
-        'a',   # 1 password
-        [1],   # 2 wishlist
-        [],    # 3 cart
-        {},    # 4 reviews
-        [],    # 5 purchases
-        'rex23@email.com' # 6 email
-    ]} # id : [name, password, wishlist, cart, review, purchases, email]
-logged_user = [None]
-products = {1: ['appple', {1: 'great'}]}
-
-
-password_reset_tokens = {}
-
-
-user_db = {
-    1: {
-        "id": 1,
-        "username": "rex",
-        "hashed_password": "hashedpassa",
-    },
-    2: {
-        "id": 2,
-        "username": "zero",
-        "hashed_password": "hashedpass0",
-    }
-}
 
 
 @app.post('/users')
@@ -111,14 +80,6 @@ def change_password(new_password: str, logged_id: str | None = Cookie(default=No
     users[int(uid)][1] = new_password
     return {'Successfully changed password.'}
 
-
-'''@app.put('/users/{user_id}')
-def update_user(user_id: int, user: CreateUser, logged_id : str | None = Cookie(default=None)):
-    if user_id not in users.keys():
-        raise HTTPException(status_code=404, detail="User not found")
-    users[user_id] = [user.username, user.password]
-    return {'user_id': user_id, 'username': user.username, 'password': user.password}
-'''
 
 @app.get('/login')
 def login(username: str, password: str, response: Response):
@@ -233,33 +194,3 @@ def purchase_products(confirmation: bool, logged_id : str | None = Cookie(defaul
         return {'Canceled transaction.'}
 
 
-'''@app.get('/login_authenticate')
-def login_authenticate(token : str = Depends(oauth2_scheme)):
-    return {'token': token}
-
-
-def decode_auth_token(token: str):
-    return ReadUser(id=9, username=token+"pluto")
-
-
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    user = decode_auth_token(token)
-    return user
-
-
-@app.get('/users/me')
-async def read_current_user(current_user: str = Depends(get_current_user)):
-    return current_user
-
-
-def fake_hash_password(password: str):
-    return "hashedpass" + password'''
-
-
-'''@app.post('/change password')
-def change_password(username: str|None, password: str):
-    if logged_user[0]:
-        users[logged_user[0]][1] = password
-        return {'Successfully changed password.'}
-    else:
-        if username in user'''
