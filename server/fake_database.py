@@ -16,7 +16,7 @@ users = \
             'Ray3',              # 1 password
             [2],               # 2 wishlist
             [4],               # 3 cart
-            {                 # 4 reviews (product id, review)
+            {                  # 4 reviews (product id, review)
                 3: 'Could use more interesting puzzles'
             },
             [3],              # 5 purchases
