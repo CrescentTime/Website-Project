@@ -82,6 +82,16 @@ def change_password(new_password: str, logged_id: str | None = Cookie(default=No
     return {'Successfully changed password.'}
 
 
+@app.put('/change_username')
+def change_username(username: str, logged_id: str | None = Cookie(default=None)):
+    if logged_id is None:
+        raise HTTPException(status_code=404, detail="Not logged in.")
+    elif int(logged_id) not in users.keys():
+        raise HTTPException(status_code=404, detail="User not found.")
+    users[int(logged_id)][0] = username
+    return {'Successfully changed username.'}
+
+
 @app.get('/login')
 def login(username: str, password: str, response: Response):
     user_val = [username, password]
@@ -115,6 +125,8 @@ def add_to_wishlist(product_id: int, logged_id : str | None = Cookie(default=Non
         raise HTTPException(status_code=404, detail="User not found.")
     if product_id in users[int(logged_id)][2]:
         raise HTTPException(status_code=404, detail="Product is already wishlisted.")
+    elif product_id in users[int(logged_id)][5]:
+        raise HTTPException(status_code=404, detail="You already own this product.")
     users[int(logged_id)][2].append(product_id)
     return {'Successfully added product to wishlist.\n'
             'wishlist': users[int(logged_id)][2]}
@@ -150,6 +162,8 @@ def add_to_cart(product_id: int, logged_id : str | None = Cookie(default=None)):
         raise HTTPException(status_code=404, detail="User not found.")
     if product_id in users[int(logged_id)][3]:
         raise HTTPException(status_code=404, detail="Product is already in the cart.")
+    elif product_id in users[int(logged_id)][5]:
+        raise HTTPException(status_code=404, detail="You already own this product.")
     users[int(logged_id)][3].append(product_id)
     return {'Successfully added product from cart.'
             'cart': users[int(logged_id)][3]}
