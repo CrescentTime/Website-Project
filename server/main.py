@@ -88,6 +88,9 @@ def change_username(username: str, logged_id: str | None = Cookie(default=None))
         raise HTTPException(status_code=404, detail="Not logged in.")
     elif int(logged_id) not in users.keys():
         raise HTTPException(status_code=404, detail="User not found.")
+    for key in users.keys():
+        if users[key][0] == username:
+            raise HTTPException(status_code=404, detail="Username is taken. Select another one.")
     users[int(logged_id)][0] = username
     return {'Successfully changed username.'}
 
