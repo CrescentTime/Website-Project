@@ -124,7 +124,7 @@ def show_wishlist(logged_id : str | None = Cookie(default=None, include_in_schem
 @app.put('/wishlist')
 def add_to_wishlist(product_id: int, logged_id : str | None = Cookie(default=None, include_in_schema=False)):
     if logged_id is None:
-        raise HTTPException(status_code=404, detail="Not logged in.")
+        raise HTTPException(status_code=404, detail="Not logged in. Please log in to add an item to the wishlist.")
     elif int(logged_id) not in users.keys():
         raise HTTPException(status_code=404, detail="User not found.")
     if product_id in users[int(logged_id)][2]:
@@ -161,7 +161,7 @@ def show_cart(logged_id : str | None = Cookie(default=None, include_in_schema=Fa
 @app.put('/cart')
 def add_to_cart(product_id: int, logged_id : str | None = Cookie(default=None, include_in_schema=False)):
     if logged_id is None:
-        raise HTTPException(status_code=404, detail="Not logged in.")
+        raise HTTPException(status_code=404, detail="Not logged in. Please log in to add an item to the cart.")
     elif int(logged_id) not in users.keys():
         raise HTTPException(status_code=404, detail="User not found.")
     if product_id in users[int(logged_id)][3]:
@@ -169,7 +169,7 @@ def add_to_cart(product_id: int, logged_id : str | None = Cookie(default=None, i
     elif product_id in users[int(logged_id)][5]:
         raise HTTPException(status_code=404, detail="You already own this product.")
     users[int(logged_id)][3].append(product_id)
-    return {'message': 'Successfully added product from cart.',
+    return {'message': 'Successfully added product to cart.',
             'cart': users[int(logged_id)][3]}
 
 
@@ -182,7 +182,7 @@ def remove_from_cart(product_id: int, logged_id : str | None = Cookie(default=No
     if product_id not in users[int(logged_id)][3]:
         raise HTTPException(status_code=404, detail="Product is not in the cart.")
     users[int(logged_id)][3].remove(product_id)
-    return {'Successfully removed product from cart.'
+    return {'message': 'Successfully removed product from cart.',
             'cart': users[int(logged_id)][3]}
 
 
@@ -216,9 +216,9 @@ def purchase_products(confirmation: bool, logged_id : str | None = Cookie(defaul
         raise HTTPException(status_code=404, detail="Not logged in.")
     elif int(logged_id) not in users.keys():
         raise HTTPException(status_code=404, detail="User not found.")
-    if not users[int(logged_id)][3]:
-        raise HTTPException(status_code=404, detail="Cart is empty.")
     if confirmation:
+        if not users[int(logged_id)][3]:
+            raise HTTPException(status_code=404, detail="Cart is empty.")
         for product in users[int(logged_id)][3]:
             users[int(logged_id)][5].append(product)
             if product in users[int(logged_id)][2]:
