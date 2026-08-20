@@ -9,6 +9,7 @@ url = URL.create(
     host=os.getenv("HOST"),
     database=os.getenv("DATABASE_NAME")
 )
+
 engine = create_engine(url)
 
 SessionLocal = sessionmaker(
