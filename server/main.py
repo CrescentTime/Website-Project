@@ -1,41 +1,16 @@
-from fastapi import FastAPI, Depends, HTTPException, Cookie, Response
+from fastapi import FastAPI, HTTPException, Cookie, Response
 from fastapi.responses import RedirectResponse
-from sqlalchemy.orm import Session
-#from sqlalchemy.sql.functions import user
-
-from models import User, Wishlist
-from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
-
-from database import SessionLocal
+from schemas import CreateUser
 from fake_database import users, products, password_reset_tokens
 
 import secrets
 
 app = FastAPI()
 
-'''def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()'''
-
 
 @app.get("/")
 async def root():
     return {"message": "Welcome!"}
-
-
-'''@app.post("/users")
-async def create_user(user: CreateUser, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.username == user.username).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Username already exists")
-    new_user = User(username=user.username, password=user.password)
-    db.add(new_user)
-    db.commit()
-    db.refresh(user)
-    return new_user'''
 
 
 @app.get('/login')
