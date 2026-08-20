@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, Cookie, Response
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 #from sqlalchemy.sql.functions import user
 
