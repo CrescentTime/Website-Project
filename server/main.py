@@ -14,12 +14,17 @@ import secrets
 
 app = FastAPI()
 
-'''def get_db():
+def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
-        db.close()'''
+        db.close()
+
+
+def does_username_exist(username: str, db: Session):
+    if db.query(User).filter(User.username == username).first():
+        raise HTTPException(status_code=400, detail="Username already exists")
 
 
 @app.get("/")
@@ -55,11 +60,14 @@ def logout(response: Response):
     return {'Logout Successful': True}
 
 
-@app.post('/users')
-def create_user(user: CreateUser):
-    u_id = len(users)+1
-    users[u_id] = [user.username, user.password, [], [], {}, [], [], user.email]
-    return {'user_id': u_id, 'username': user.username, 'password': user.password, 'email': user.email}
+@app.post('/signup')
+def create_user(new_user: CreateUser, db: Session = Depends(get_db)):
+    does_username_exist(new_user.username, db)
+    user = User(username=new_user.username, email=new_user.email, password=new_user.password)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
 
 
 @app.get('/users/{user_id}')
