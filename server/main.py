@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import User, Wishlist
+from models import User, Wishlist, Product, Cart
 from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
 
 from database import SessionLocal
@@ -124,32 +124,40 @@ def show_wishlist(logged_id : str | None = Cookie(default=None, include_in_schem
 
 @app.put('/wishlist')
 def add_to_wishlist(product_id: int,
-                    logged_id : str | None = Cookie(default=None, include_in_schema=False),
+                    logged_id: str | None = Cookie(default=None, include_in_schema=False),
                     db: Session = Depends(get_db)):
     user = db.get(User, logged_id)
-    if logged_id is None:
+    if user is None:
         raise HTTPException(status_code=404, detail="Not logged in. Please log in to add an item to the wishlist.")
-    if product_id in users[int(logged_id)][2]:
+    product_in_wishlist = db.query(Wishlist).filter(Wishlist.product_id == product_id,
+                                                 Wishlist.user_id == int(logged_id)).first()
+    if product_in_wishlist is not None:
         raise HTTPException(status_code=404, detail="Product is already wishlisted.")
-    elif product_id in users[int(logged_id)][5]:
+    product_in_cart = db.query(Cart).filter(Cart.product_id == product_id,
+                                            Cart.user_id == int(logged_id)).first()
+    if product_in_cart is not None:
         raise HTTPException(status_code=404, detail="You already own this product.")
-    users[int(logged_id)][2].append(product_id)
-    return {'Successfully added product to wishlist.\n'
-            'wishlist': users[int(logged_id)][2]}
+    added_product = Wishlist(product_id=product_id, user_id=int(logged_id))
+    db.add(added_product)
+    db.commit()
+    db.refresh(added_product)
+    return {'Successfully added product to wishlist.'}
 
 
 @app.delete('/wishlist')
 def remove_from_wishlist(product_id: int,
-                         logged_id : str | None = Cookie(default=None, include_in_schema=False)):
-    if logged_id is None:
+                         logged_id: str | None = Cookie(default=None, include_in_schema=False),
+                         db: Session = Depends(get_db)):
+    user = db.get(User, logged_id)
+    if user is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
-    elif int(logged_id) not in users.keys():
-        raise HTTPException(status_code=404, detail="User not found.")
-    if product_id not in users[int(logged_id)][2]:
+    product_in_wishlist = db.query(Wishlist).filter(Wishlist.product_id == product_id,
+                                                    Wishlist.user_id == int(logged_id)).first()
+    if product_in_wishlist is None:
         raise HTTPException(status_code=404, detail="Product is not in the wishlist.")
-    users[int(logged_id)][2].remove(product_id)
-    return {'Successfully removed product from wishlist.\n'
-            'wishlist': users[int(logged_id)][2]}
+    db.delete(product_in_wishlist)
+    db.commit()
+    return {'Successfully removed product from wishlist.'}
 
 
 @app.get('/cart')
