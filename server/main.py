@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, Date, func
 from sqlalchemy.orm import Session
 
-from models import User, Wishlist, Product, Cart, Purchase
+from models import User, Wishlist, Product, Cart, Purchase, Review
 from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
 
 from database import SessionLocal
@@ -217,15 +217,30 @@ def get_product(product_id: int,
 @app.put('/products/{product_id}')
 def add_review(product_id: int,
                review: str,
+               review_recommendation: str,
                logged_id : str | None = Cookie(default=None, include_in_schema=False),
                db: Session = Depends(get_db)):
     is_logged_in(db, logged_id)
-    if product_id not in products.keys():
+    product = db.query(Product).filter(Product.id == product_id)
+    if product is None:
         raise HTTPException(status_code=404, detail="Product not found.")
-    if product_id not in users[int(logged_id)][5]:
+    product_in_purchases = db.query(Purchase).filter(Purchase.product_id == product_id,
+                                                     Purchase.user_id == int(logged_id)).first()
+    if product_in_purchases is None:
         raise HTTPException(status_code=404, detail="Need to purchase the product before reviewing.")
-    products[product_id][1][int(logged_id)] = review
-    users[int(logged_id)][4][product_id] = review
+    product_review = db.query(Review).filter(Review.product_id == product_id,
+                                             Review.user_id == int(logged_id)).first()
+    if product_review is None:
+        product_review = Review(user_id=int(logged_id), product_id=product_id,
+                                review_details=review, review_recommendation=review_recommendation,
+                                review_date=func.current_date())
+        db.add(product_review)
+    else:
+        product_review.review_details = review
+        product_review.review_recommendation = review_recommendation
+        product_review.review_date = func.current_date()
+    db.commit()
+    db.refresh(product_review)
     return 'Successfully reviewed the product.'
 
 
