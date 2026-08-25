@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, Cookie, Response
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import select
+from sqlalchemy import select, Date, func
 from sqlalchemy.orm import Session
 
 from models import User, Wishlist, Product, Cart, Purchase
@@ -217,11 +217,9 @@ def get_product(product_id: int,
 @app.put('/products/{product_id}')
 def add_review(product_id: int,
                review: str,
-               logged_id : str | None = Cookie(default=None, include_in_schema=False)):
-    if logged_id is None:
-        raise HTTPException(status_code=404, detail="Not logged in.")
-    elif int(logged_id) not in users.keys():
-        raise HTTPException(status_code=404, detail="User not found.")
+               logged_id : str | None = Cookie(default=None, include_in_schema=False),
+               db: Session = Depends(get_db)):
+    is_logged_in(db, logged_id)
     if product_id not in products.keys():
         raise HTTPException(status_code=404, detail="Product not found.")
     if product_id not in users[int(logged_id)][5]:
@@ -233,19 +231,24 @@ def add_review(product_id: int,
 
 @app.post('/purchase')
 def purchase_products(confirmation: bool,
-                      logged_id : str | None = Cookie(default=None, include_in_schema=False)):
-    if logged_id is None:
-        raise HTTPException(status_code=404, detail="Not logged in.")
-    elif int(logged_id) not in users.keys():
-        raise HTTPException(status_code=404, detail="User not found.")
+                      logged_id : str | None = Cookie(default=None, include_in_schema=False),
+                      db: Session = Depends(get_db)):
+    is_logged_in(db, logged_id)
     if confirmation:
-        if not users[int(logged_id)][3]:
+        cart = db.query(Cart).filter(Cart.user_id == int(logged_id)).all()
+        if cart is None:
             raise HTTPException(status_code=404, detail="Cart is empty.")
-        for product in users[int(logged_id)][3]:
-            users[int(logged_id)][5].append(product)
-            if product in users[int(logged_id)][2]:
-                users[int(logged_id)][2].remove(product)
-        users[int(logged_id)][3] = []
+        for cart_product in cart:
+            purchased_product = Purchase(product_id=cart_product.product_id,user_id=int(logged_id),
+                                         purchase_date=func.current_date())
+            db.add(purchased_product)
+            wishlisted_product = db.query(Wishlist).filter(Wishlist.user_id == int(logged_id),
+                                                           Wishlist.product_id == cart_product.product_id).first()
+            if wishlisted_product is not None:
+                db.delete(wishlisted_product)
+            db.delete(cart_product)
+            db.commit()
+            db.refresh(purchased_product)
         return {'Successfully purchased products.'}
     else:
         return {'Canceled transaction.'}
