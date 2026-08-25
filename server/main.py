@@ -116,10 +116,11 @@ def change_username(username: str,
 @app.get('/wishlist')
 def show_wishlist(logged_id : str | None = Cookie(default=None, include_in_schema=False),
                   db: Session = Depends(get_db)):
-    if logged_id is None:
-        raise HTTPException(status_code=404, detail="Not logged in.")
     user = db.get(User, logged_id)
-    return {'wishlist': users[int(logged_id)][2]}
+    if user is None:
+        raise HTTPException(status_code=404, detail="Not logged in.")
+    wishlist = db.query(Wishlist.product_id).filter(Wishlist.user_id == int(logged_id)).all()
+    return {'wishlist': [wishlisted_product.product_id for wishlisted_product in wishlist]}
 
 
 @app.put('/wishlist')
