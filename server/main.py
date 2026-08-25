@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import User, Wishlist, Product, Cart
+from models import User, Wishlist, Product, Cart, Purchase
 from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
 
 from database import SessionLocal
@@ -25,6 +25,13 @@ def get_db():
 def does_username_exist(username: str, db: Session):
     if db.query(User).filter(User.username == username).first():
         raise HTTPException(status_code=400, detail="Username already exists")
+
+
+def is_logged_in(db: Session,
+                 logged_id: str | None = Cookie(default=None)):
+    user = db.get(User, int(logged_id))
+    if user is None:
+        raise HTTPException(status_code=404, detail="Not logged in.")
 
 
 @app.get("/")
@@ -116,9 +123,7 @@ def change_username(username: str,
 @app.get('/wishlist')
 def show_wishlist(logged_id : str | None = Cookie(default=None, include_in_schema=False),
                   db: Session = Depends(get_db)):
-    user = db.get(User, logged_id)
-    if user is None:
-        raise HTTPException(status_code=404, detail="Not logged in.")
+    is_logged_in(db, logged_id)
     wishlist = db.query(Wishlist.product_id).filter(Wishlist.user_id == int(logged_id)).all()
     return {'wishlist': [wishlisted_product.product_id for wishlisted_product in wishlist]}
 
@@ -127,16 +132,14 @@ def show_wishlist(logged_id : str | None = Cookie(default=None, include_in_schem
 def add_to_wishlist(product_id: int,
                     logged_id: str | None = Cookie(default=None, include_in_schema=False),
                     db: Session = Depends(get_db)):
-    user = db.get(User, logged_id)
-    if user is None:
-        raise HTTPException(status_code=404, detail="Not logged in. Please log in to add an item to the wishlist.")
+    is_logged_in(db, logged_id)
     product_in_wishlist = db.query(Wishlist).filter(Wishlist.product_id == product_id,
                                                  Wishlist.user_id == int(logged_id)).first()
     if product_in_wishlist is not None:
         raise HTTPException(status_code=404, detail="Product is already wishlisted.")
-    product_in_cart = db.query(Cart).filter(Cart.product_id == product_id,
-                                            Cart.user_id == int(logged_id)).first()
-    if product_in_cart is not None:
+    product_in_purchases = db.query(Purchase).filter(Purchase.product_id == product_id,
+                                                     Purchase.user_id == int(logged_id)).first()
+    if product_in_purchases is not None:
         raise HTTPException(status_code=404, detail="You already own this product.")
     added_product = Wishlist(product_id=product_id, user_id=int(logged_id))
     db.add(added_product)
@@ -149,9 +152,7 @@ def add_to_wishlist(product_id: int,
 def remove_from_wishlist(product_id: int,
                          logged_id: str | None = Cookie(default=None, include_in_schema=False),
                          db: Session = Depends(get_db)):
-    user = db.get(User, logged_id)
-    if user is None:
-        raise HTTPException(status_code=404, detail="Not logged in.")
+    is_logged_in(db, logged_id)
     product_in_wishlist = db.query(Wishlist).filter(Wishlist.product_id == product_id,
                                                     Wishlist.user_id == int(logged_id)).first()
     if product_in_wishlist is None:
@@ -162,42 +163,45 @@ def remove_from_wishlist(product_id: int,
 
 
 @app.get('/cart')
-def show_cart(logged_id : str | None = Cookie(default=None, include_in_schema=False)):
-    if logged_id is None:
-        raise HTTPException(status_code=404, detail="Not logged in.")
-    elif int(logged_id) not in users.keys():
-        raise HTTPException(status_code=404, detail="User not found.")
-    return {'cart': users[int(logged_id)][3]}
+def show_cart(logged_id : str | None = Cookie(default=None, include_in_schema=False),
+              db: Session = Depends(get_db)):
+    is_logged_in(db, logged_id)
+    cart = db.query(Cart.product_id).filter(Cart.user_id == int(logged_id)).all()
+    return {'wishlist': [cart_product.product_id for cart_product in cart]}
 
 
 @app.put('/cart')
 def add_to_cart(product_id: int,
-                logged_id : str | None = Cookie(default=None, include_in_schema=False)):
-    if logged_id is None:
-        raise HTTPException(status_code=404, detail="Not logged in. Please log in to add an item to the cart.")
-    elif int(logged_id) not in users.keys():
-        raise HTTPException(status_code=404, detail="User not found.")
-    if product_id in users[int(logged_id)][3]:
+                logged_id : str | None = Cookie(default=None, include_in_schema=False),
+                db: Session = Depends(get_db)):
+    is_logged_in(db, logged_id)
+    product_in_cart = db.query(Cart).filter(Cart.product_id == product_id,
+                                            Cart.user_id == int(logged_id)).first()
+    if product_in_cart is not None:
         raise HTTPException(status_code=404, detail="Product is already in the cart.")
-    elif product_id in users[int(logged_id)][5]:
+    product_in_purchases = db.query(Purchase).filter(Purchase.product_id == product_id,
+                                                     Purchase.user_id == int(logged_id)).first()
+    if product_in_purchases is not None:
         raise HTTPException(status_code=404, detail="You already own this product.")
-    users[int(logged_id)][3].append(product_id)
-    return {'message': 'Successfully added product to cart.',
-            'cart': users[int(logged_id)][3]}
+    added_product = Cart(product_id=product_id, user_id=int(logged_id))
+    db.add(added_product)
+    db.commit()
+    db.refresh(added_product)
+    return {'message': 'Successfully added product to cart.'}
 
 
 @app.delete('/cart')
 def remove_from_cart(product_id: int,
-                     logged_id : str | None = Cookie(default=None, include_in_schema=False)):
-    if logged_id is None:
-        raise HTTPException(status_code=404, detail="Not logged in.")
-    elif int(logged_id) not in users.keys():
-        raise HTTPException(status_code=404, detail="User not found.")
-    if product_id not in users[int(logged_id)][3]:
+                     logged_id : str | None = Cookie(default=None, include_in_schema=False),
+                     db: Session = Depends(get_db)):
+    is_logged_in(db, logged_id)
+    product_in_cart = db.query(Cart).filter(Cart.product_id == product_id,
+                                            Cart.user_id == int(logged_id)).first()
+    if product_in_cart is None:
         raise HTTPException(status_code=404, detail="Product is not in the cart.")
-    users[int(logged_id)][3].remove(product_id)
-    return {'message': 'Successfully removed product from cart.',
-            'cart': users[int(logged_id)][3]}
+    db.delete(product_in_cart)
+    db.commit()
+    return {'message': 'Successfully removed product from cart.'}
 
 
 @app.get('/products/{product_id}')
