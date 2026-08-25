@@ -3,7 +3,6 @@ from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-#from sqlalchemy.sql.functions import user
 
 from models import User, Wishlist
 from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
@@ -35,7 +34,8 @@ async def root():
 
 @app.get('/login')
 def login(username: str, password: str, response: Response, db: Session = Depends(get_db)):
-    user = db.scalars(select(User.id).where(User.username == username, User.password == password)).first()
+    user = db.scalars(select(User.id).where(User.username == username,
+                                            User.password == password)).first()
     if user is not None:
         response.set_cookie(key = "logged_id", value = str(user))
         return {'Login Successful': True}, RedirectResponse("http://127.0.0.1:8000/")
@@ -80,7 +80,9 @@ def reset_password(username: str):
 
 
 @app.put('/change_password')
-def change_password(new_password: str, logged_id: str | None = Cookie(default=None, include_in_schema=False), token: str | None = ''):
+def change_password(new_password: str,
+                    logged_id: str | None = Cookie(default=None, include_in_schema=False),
+                    token: str | None = ''):
     uid = logged_id
     if logged_id is None:
         for key in password_reset_tokens.keys():
@@ -98,7 +100,8 @@ def change_password(new_password: str, logged_id: str | None = Cookie(default=No
 
 
 @app.put('/change_username')
-def change_username(username: str, logged_id: str | None = Cookie(default=None, include_in_schema=False)):
+def change_username(username: str,
+                    logged_id: str | None = Cookie(default=None, include_in_schema=False)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     elif int(logged_id) not in users.keys():
@@ -111,20 +114,21 @@ def change_username(username: str, logged_id: str | None = Cookie(default=None, 
 
 
 @app.get('/wishlist')
-def show_wishlist(logged_id : str | None = Cookie(default=None, include_in_schema=False)):
+def show_wishlist(logged_id : str | None = Cookie(default=None, include_in_schema=False),
+                  db: Session = Depends(get_db)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
-    elif int(logged_id) not in users.keys():
-        raise HTTPException(status_code=404, detail="User not found.")
+    user = db.get(User, logged_id)
     return {'wishlist': users[int(logged_id)][2]}
 
 
 @app.put('/wishlist')
-def add_to_wishlist(product_id: int, logged_id : str | None = Cookie(default=None, include_in_schema=False)):
+def add_to_wishlist(product_id: int,
+                    logged_id : str | None = Cookie(default=None, include_in_schema=False),
+                    db: Session = Depends(get_db)):
+    user = db.get(User, logged_id)
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in. Please log in to add an item to the wishlist.")
-    elif int(logged_id) not in users.keys():
-        raise HTTPException(status_code=404, detail="User not found.")
     if product_id in users[int(logged_id)][2]:
         raise HTTPException(status_code=404, detail="Product is already wishlisted.")
     elif product_id in users[int(logged_id)][5]:
@@ -135,7 +139,8 @@ def add_to_wishlist(product_id: int, logged_id : str | None = Cookie(default=Non
 
 
 @app.delete('/wishlist')
-def remove_from_wishlist(product_id: int, logged_id : str | None = Cookie(default=None, include_in_schema=False)):
+def remove_from_wishlist(product_id: int,
+                         logged_id : str | None = Cookie(default=None, include_in_schema=False)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     elif int(logged_id) not in users.keys():
@@ -157,7 +162,8 @@ def show_cart(logged_id : str | None = Cookie(default=None, include_in_schema=Fa
 
 
 @app.put('/cart')
-def add_to_cart(product_id: int, logged_id : str | None = Cookie(default=None, include_in_schema=False)):
+def add_to_cart(product_id: int,
+                logged_id : str | None = Cookie(default=None, include_in_schema=False)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in. Please log in to add an item to the cart.")
     elif int(logged_id) not in users.keys():
@@ -172,7 +178,8 @@ def add_to_cart(product_id: int, logged_id : str | None = Cookie(default=None, i
 
 
 @app.delete('/cart')
-def remove_from_cart(product_id: int, logged_id : str | None = Cookie(default=None, include_in_schema=False)):
+def remove_from_cart(product_id: int,
+                     logged_id : str | None = Cookie(default=None, include_in_schema=False)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     elif int(logged_id) not in users.keys():
@@ -185,7 +192,8 @@ def remove_from_cart(product_id: int, logged_id : str | None = Cookie(default=No
 
 
 @app.get('/products/{product_id}')
-def get_product(product_id: int, logged_id : str | None = Cookie(default=None, include_in_schema=False)):
+def get_product(product_id: int,
+                logged_id : str | None = Cookie(default=None, include_in_schema=False)):
     if product_id not in products.keys():
         raise HTTPException(status_code=404, detail="Product not found.")
     if logged_id is None:
@@ -194,7 +202,9 @@ def get_product(product_id: int, logged_id : str | None = Cookie(default=None, i
 
 
 @app.put('/products/{product_id}')
-def add_review(product_id: int, review: str, logged_id : str | None = Cookie(default=None, include_in_schema=False)):
+def add_review(product_id: int,
+               review: str,
+               logged_id : str | None = Cookie(default=None, include_in_schema=False)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     elif int(logged_id) not in users.keys():
@@ -209,7 +219,8 @@ def add_review(product_id: int, review: str, logged_id : str | None = Cookie(def
 
 
 @app.post('/purchase')
-def purchase_products(confirmation: bool, logged_id : str | None = Cookie(default=None, include_in_schema=False)):
+def purchase_products(confirmation: bool,
+                      logged_id : str | None = Cookie(default=None, include_in_schema=False)):
     if logged_id is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
     elif int(logged_id) not in users.keys():
