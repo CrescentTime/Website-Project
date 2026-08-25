@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, Cookie, Response
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 #from sqlalchemy.sql.functions import user
 
@@ -32,26 +33,14 @@ async def root():
     return {"message": "Welcome!"}
 
 
-'''@app.post("/users")
-async def create_user(user: CreateUser, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.username == user.username).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Username already exists")
-    new_user = User(username=user.username, password=user.password)
-    db.add(new_user)
-    db.commit()
-    db.refresh(user)
-    return new_user'''
-
-
 @app.get('/login')
-def login(username: str, password: str, response: Response):
-    user_val = [username, password]
-    for key in users.keys():
-        if users[key][0] == user_val[0] and users[key][1] == user_val[1]:
-            response.set_cookie(key = "logged_id", value = str(key))
-            return {'Login Successful': True}, RedirectResponse("http://127.0.0.1:8000/")
-    raise HTTPException(status_code=404, detail="Invalid username or password. Try again.")
+def login(username: str, password: str, response: Response, db: Session = Depends(get_db)):
+    user = db.scalars(select(User.id).where(User.username == username, User.password == password)).first()
+    if user is not None:
+        response.set_cookie(key = "logged_id", value = str(user))
+        return {'Login Successful': True}, RedirectResponse("http://127.0.0.1:8000/")
+    else:
+        raise HTTPException(status_code=404, detail="Invalid username or password. Try again.")
 
 
 @app.get('/logout')
