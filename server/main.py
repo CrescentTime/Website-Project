@@ -1,3 +1,7 @@
+import os
+import secrets
+import jwt
+
 from fastapi import FastAPI, Depends, HTTPException, Cookie, Response
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -10,9 +14,14 @@ from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
 from database import SessionLocal
 from fake_database import users, products, password_reset_tokens
 
-import secrets
+from datetime import datetime, timezone, timedelta
+
+from dotenv import load_dotenv
 
 app = FastAPI()
+
+load_dotenv()
+reset_pass_signature = os.getenv('RESET_PASSWORD_SIGNATURE')
 
 def get_db():
     db = SessionLocal()
@@ -74,35 +83,35 @@ def read_user(user_id: int, logged_id : str | None = Cookie(default=None)):
 
 
 @app.get('/reset_password')
-def reset_password(username: str):
-    for key in users.keys():
-        if users[key][0] == username:
-            token = secrets.token_urlsafe(32)
-            password_reset_tokens[key] = token
-            reset_link = "http://127.0.0.1:8000/change_password?token=" + token
-            print(f"To: {users[key][6]}")
-            print(f"Link to reset password: {reset_link}")
-            break
+def reset_password(username: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == username).first()
+    if user:
+        payload = {"user_id": user.id,
+                   "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=1)}
+        token = jwt.encode(payload=payload, key=reset_pass_signature,algorithm="HS256")
+        return {"message:": 'Sent email to reset password if the user exists.',
+                "To: ": user.email,
+                "Reset Link: ": "http://127.0.0.1:8000/change_password?token=" + token}
     return {'Sent email to reset password if the user exists.'}
 
 
 @app.put('/change_password')
 def change_password(new_password: str,
                     logged_id: str | None = Cookie(default=None, include_in_schema=False),
-                    token: str | None = ''):
+                    token: str | None = '',
+                    db: Session = Depends(get_db)):
     uid = logged_id
-    if logged_id is None:
-        for key in password_reset_tokens.keys():
-            if token == password_reset_tokens[key]:
-                uid = key
-                password_reset_tokens.pop(key)
-                break
-        if uid is None:
-            raise HTTPException(status_code=404, detail="Invalid or expired reset link. "
-                                                        "Need to request password reset.")
-    elif int(logged_id) not in users.keys():
-        raise HTTPException(status_code=404, detail="User not found.")
-    users[int(uid)][1] = new_password
+    if uid is None:
+        try:
+            decoded = jwt.decode(token, key=reset_pass_signature,
+                                 algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=404, detail="Expired reset link, request a new one.")
+        uid = decoded["user_id"]
+    user = db.get(User, int(uid))
+    user.password = new_password
+    db.commit()
+    db.refresh(user)
     return {'Successfully changed password.'}
 
 
