@@ -215,12 +215,23 @@ def remove_from_cart(product_id: int,
 
 @app.get('/products/{product_id}')
 def get_product(product_id: int,
-                logged_id : str | None = Cookie(default=None, include_in_schema=False)):
-    if product_id not in products.keys():
+                logged_id : str | None = Cookie(default=None, include_in_schema=False),
+                db: Session = Depends(get_db)):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if product is None:
         raise HTTPException(status_code=404, detail="Product not found.")
+    product_info = {
+        "id": product.id,
+        "name": product.name,
+        "price": product.price,
+        "discount": product.discount,
+        "short_description": product.short_description,
+        "full_description": product.full_description,
+        "image_url": product.img_path
+    }
     if logged_id is None:
-        return {'product': products[product_id], 'write review': False}
-    return {'product': products[product_id], 'write review': True}
+        return {'product': product_info, 'write review': False}
+    return {'product': product_info, 'write review': True}
 
 
 @app.put('/products/{product_id}')
