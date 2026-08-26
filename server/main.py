@@ -87,7 +87,7 @@ def reset_password(username: str, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == username).first()
     if user:
         payload = {"user_id": user.id,
-                   "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=1)}
+                   "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=10)}
         token = jwt.encode(payload=payload, key=reset_pass_signature,algorithm="HS256")
         return {"message:": 'Sent email to reset password if the user exists.',
                 "To: ": user.email,
