@@ -117,15 +117,15 @@ def change_password(new_password: str,
 
 @app.put('/change_username')
 def change_username(username: str,
-                    logged_id: str | None = Cookie(default=None, include_in_schema=False)):
-    if logged_id is None:
-        raise HTTPException(status_code=404, detail="Not logged in.")
-    elif int(logged_id) not in users.keys():
-        raise HTTPException(status_code=404, detail="User not found.")
-    for key in users.keys():
-        if users[key][0] == username:
-            raise HTTPException(status_code=404, detail="Username is taken. Select another one.")
-    users[int(logged_id)][0] = username
+                    logged_id: str | None = Cookie(default=None, include_in_schema=False),
+                    db: Session = Depends(get_db)):
+    is_logged_in(db, logged_id)
+    existing_name = db.query(User).filter(User.username == username).first()
+    if existing_name is not None:
+        raise HTTPException(status_code=404, detail="Username is taken. Select another one.")
+    user = db.get(User, int(logged_id))
+    user.username = username
+    db.commit()
     return {'Successfully changed username.'}
 
 
