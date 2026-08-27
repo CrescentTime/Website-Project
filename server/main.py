@@ -35,13 +35,15 @@ def does_username_exist(username: str, db: Session):
         raise HTTPException(status_code=400, detail="Username already exists")
 
 
-def is_logged_in(db: Session,
+def is_logged_in(db: Session, 
+                 request: Request,
                  logged_id: str | None = Cookie(default=None)):
     if logged_id is None:
-        raise HTTPException(status_code=404, detail="Not logged in.")
+        return False
     user = db.get(User, int(logged_id))
     if user is None:
-        raise HTTPException(status_code=404, detail="Not logged in.")
+        return False
+    return True
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -82,7 +84,8 @@ def create_user(new_user: CreateUser, db: Session = Depends(get_db)):
 def read_user(request: Request,
               logged_id : str | None = Cookie(default=None, include_in_schema=False),
               db: Session = Depends(get_db)):
-    is_logged_in(db, logged_id)
+    if not is_logged_in(db, request, logged_id):
+        return templates.TemplateResponse(request=request, name="login.html")
     user = db.query(User).filter(User.id == logged_id).first()
     context = {"user": user}
     return templates.TemplateResponse(request=request, name="user_profile.html", context=context)
@@ -123,9 +126,11 @@ def change_password(new_password: str,
 
 @app.put('/change_username')
 def change_username(username: str,
+                    request: Request,
                     logged_id: str | None = Cookie(default=None, include_in_schema=False),
                     db: Session = Depends(get_db)):
-    is_logged_in(db, logged_id)
+    if not is_logged_in(db, request, logged_id):
+        return templates.TemplateResponse(request=request, name="login.html")
     existing_name = db.query(User).filter(User.username == username).first()
     if existing_name is not None:
         raise HTTPException(status_code=404, detail="Username is taken. Select another one.")
@@ -139,16 +144,19 @@ def change_username(username: str,
 def show_wishlist(request: Request,
                   logged_id : str | None = Cookie(default=None, include_in_schema=False),
                   db: Session = Depends(get_db)):
-    is_logged_in(db, logged_id)
+    if not is_logged_in(db, request, logged_id):
+        return templates.TemplateResponse(request=request, name="login.html")
     wishlist = db.query(Wishlist.product_id).filter(Wishlist.user_id == int(logged_id)).all()
     return templates.TemplateResponse(request=request, name="wishlist.html", context={"wishlist": wishlist})
 
 
 @app.put('/wishlist')
 def add_to_wishlist(product_id: int,
+                    request: Request,
                     logged_id: str | None = Cookie(default=None, include_in_schema=False),
                     db: Session = Depends(get_db)):
-    is_logged_in(db, logged_id)
+    if not is_logged_in(db, request, logged_id):
+        return templates.TemplateResponse(request=request, name="login.html")
     product_in_wishlist = db.query(Wishlist).filter(Wishlist.product_id == product_id,
                                                  Wishlist.user_id == int(logged_id)).first()
     if product_in_wishlist is not None:
@@ -166,9 +174,11 @@ def add_to_wishlist(product_id: int,
 
 @app.delete('/wishlist')
 def remove_from_wishlist(product_id: int,
+                         request: Request,
                          logged_id: str | None = Cookie(default=None, include_in_schema=False),
                          db: Session = Depends(get_db)):
-    is_logged_in(db, logged_id)
+    if not is_logged_in(db, request, logged_id):
+        return templates.TemplateResponse(request=request, name="login.html")
     product_in_wishlist = db.query(Wishlist).filter(Wishlist.product_id == product_id,
                                                     Wishlist.user_id == int(logged_id)).first()
     if product_in_wishlist is None:
@@ -182,16 +192,19 @@ def remove_from_wishlist(product_id: int,
 def show_cart(request: Request,
               logged_id : str | None = Cookie(default=None, include_in_schema=False),
               db: Session = Depends(get_db)):
-    is_logged_in(db, logged_id)
+    if not is_logged_in(db, request, logged_id):
+        return templates.TemplateResponse(request=request, name="login.html")
     cart = db.query(Cart).filter(Cart.user_id == int(logged_id)).all()
     return templates.TemplateResponse(request=request, name="cart.html", context={"cart": cart})
 
 
 @app.put('/cart')
 def add_to_cart(product_id: int,
+                request: Request,
                 logged_id : str | None = Cookie(default=None, include_in_schema=False),
                 db: Session = Depends(get_db)):
-    is_logged_in(db, logged_id)
+    if not is_logged_in(db, request, logged_id):
+        return templates.TemplateResponse(request=request, name="login.html")
     product_in_cart = db.query(Cart).filter(Cart.product_id == product_id,
                                             Cart.user_id == int(logged_id)).first()
     if product_in_cart is not None:
@@ -209,9 +222,11 @@ def add_to_cart(product_id: int,
 
 @app.delete('/cart')
 def remove_from_cart(product_id: int,
+                     request: Request,
                      logged_id : str | None = Cookie(default=None, include_in_schema=False),
                      db: Session = Depends(get_db)):
-    is_logged_in(db, logged_id)
+    if not is_logged_in(db, request, logged_id):
+        return templates.TemplateResponse(request=request, name="login.html")
     product_in_cart = db.query(Cart).filter(Cart.product_id == product_id,
                                             Cart.user_id == int(logged_id)).first()
     if product_in_cart is None:
@@ -246,9 +261,11 @@ def get_product(product_id: int,
 def add_review(product_id: int,
                review: str,
                review_recommendation: str,
+               request: Request,
                logged_id : str | None = Cookie(default=None, include_in_schema=False),
                db: Session = Depends(get_db)):
-    is_logged_in(db, logged_id)
+    if not is_logged_in(db, request, logged_id):
+        return templates.TemplateResponse(request=request, name="login.html")
     product = db.query(Product).filter(Product.id == product_id)
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found.")
@@ -274,9 +291,11 @@ def add_review(product_id: int,
 
 @app.post('/purchase')
 def purchase_products(confirmation: bool,
+                      request: Request,
                       logged_id : str | None = Cookie(default=None, include_in_schema=False),
                       db: Session = Depends(get_db)):
-    is_logged_in(db, logged_id)
+    if not is_logged_in(db, request, logged_id):
+        return templates.TemplateResponse(request=request, name="login.html")
     if confirmation:
         cart = db.query(Cart).filter(Cart.user_id == int(logged_id)).all()
         if cart is None:
