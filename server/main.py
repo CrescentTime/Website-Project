@@ -1,5 +1,4 @@
 import os
-import secrets
 import jwt
 
 from fastapi import FastAPI, Depends, HTTPException, Cookie, Response
@@ -38,6 +37,8 @@ def does_username_exist(username: str, db: Session):
 
 def is_logged_in(db: Session,
                  logged_id: str | None = Cookie(default=None)):
+    if logged_id is None:
+        raise HTTPException(status_code=404, detail="Not logged in.")
     user = db.get(User, int(logged_id))
     if user is None:
         raise HTTPException(status_code=404, detail="Not logged in.")
@@ -75,11 +76,11 @@ def create_user(new_user: CreateUser, db: Session = Depends(get_db)):
     return user
 
 
-@app.get('/users/{user_id}')
-def read_user(user_id: int, logged_id : str | None = Cookie(default=None)):
-    if user_id not in users.keys():
-        raise HTTPException(status_code=404, detail="User not found")
-    return {'user_id': user_id, 'username': users[user_id][0]}
+@app.get('/user_profile')
+def read_user(logged_id : str | None = Cookie(default=None, include_in_schema=False), db: Session = Depends(get_db)):
+    is_logged_in(db, logged_id)
+    user = db.query(User).filter(User.id == logged_id).first()
+    return {"user id: ": user.id, "username: ": user.username, "email: ": user.email}
 
 
 @app.get('/reset_password')
