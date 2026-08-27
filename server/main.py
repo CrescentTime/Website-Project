@@ -2,13 +2,12 @@ import os
 import jwt
 
 from fastapi import FastAPI, Depends, HTTPException, Cookie, Response
-from fastapi.responses import RedirectResponse, HTMLResponse
-from fastapi.templating import Jinja2Templates
-from sqlalchemy import select, Date, func
+from fastapi.responses import RedirectResponse
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from models import User, Wishlist, Product, Cart, Purchase, Review
-from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
+from schemas import CreateUser
 from database import SessionLocal
 from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
