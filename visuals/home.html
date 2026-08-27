@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
-    <link rel="stylesheet" href="assests/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <div class="topnav">
@@ -14,5 +14,22 @@
     <a href="wishlist.html">Wishlist</a>
     <a href="cart.html">Cart</a>
 </div>
+{% for product in products %}
+<table style="width:25%; margin-left: auto; margin-right: auto;">
+    <tr>
+        <th rowspan="2"><img src="{{url_for('assets', path='/' ~ product.img_path)}}" alt="" height=200 width=300></th>
+        <th>
+            <div style="vertical-align: top; text-align: left">{{product.name}}</div>
+            <div style="text-align: left; white-space: pre-line; float: left">
+                Short Description:
+                {{product.short_description}}
+            </div>
+        </th>
+        <th>
+            <div style="vertical-align: top; text-align: left">Price: {{product.price}}</div>
+        </th>
+    </tr>
+</table>
+{% endfor %}
 </body>
 </html>

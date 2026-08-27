@@ -1,9 +1,10 @@
 import os
 import jwt
 
-from fastapi import FastAPI, Depends, HTTPException, Cookie, Response
+from fastapi import FastAPI, Depends, HTTPException, Cookie, Response, Request
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select, Date, func
 from sqlalchemy.orm import Session
 
@@ -12,8 +13,11 @@ from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
 from database import SessionLocal
 from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
+from starlette.staticfiles import StaticFiles
 
 app = FastAPI()
+app.mount('/assets', StaticFiles(directory='visuals/assets'), name='assets')
+templates = Jinja2Templates(directory="visuals")
 
 load_dotenv()
 reset_pass_signature = os.getenv('RESET_PASSWORD_SIGNATURE')
@@ -40,9 +44,11 @@ def is_logged_in(db: Session,
         raise HTTPException(status_code=404, detail="Not logged in.")
 
 
-@app.get("/")
-async def root():
-    return {"message": "Welcome!"}
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request, db: Session = Depends(get_db)):
+    products = db.query(Product).all()
+    context = {"products": products}
+    return templates.TemplateResponse(request=request, name="home.html", context=context)
 
 
 @app.get('/login')
