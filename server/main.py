@@ -78,11 +78,14 @@ def create_user(new_user: CreateUser, db: Session = Depends(get_db)):
     return user
 
 
-@app.get('/user_profile')
-def read_user(logged_id : str | None = Cookie(default=None, include_in_schema=False), db: Session = Depends(get_db)):
+@app.get('/user_profile', response_class=HTMLResponse)
+def read_user(request: Request,
+              logged_id : str | None = Cookie(default=None, include_in_schema=False),
+              db: Session = Depends(get_db)):
     is_logged_in(db, logged_id)
     user = db.query(User).filter(User.id == logged_id).first()
-    return {"user id: ": user.id, "username: ": user.username, "email: ": user.email}
+    context = {"user": user}
+    return templates.TemplateResponse(request=request, name="user_profile.html", context=context)
 
 
 @app.get('/reset_password')
@@ -132,12 +135,13 @@ def change_username(username: str,
     return {'Successfully changed username.'}
 
 
-@app.get('/wishlist')
-def show_wishlist(logged_id : str | None = Cookie(default=None, include_in_schema=False),
+@app.get('/wishlist', response_class=HTMLResponse)
+def show_wishlist(request: Request,
+                  logged_id : str | None = Cookie(default=None, include_in_schema=False),
                   db: Session = Depends(get_db)):
     is_logged_in(db, logged_id)
     wishlist = db.query(Wishlist.product_id).filter(Wishlist.user_id == int(logged_id)).all()
-    return {'wishlist': [wishlisted_product.product_id for wishlisted_product in wishlist]}
+    return templates.TemplateResponse(request=request, name="wishlist.html", context={"wishlist": wishlist})
 
 
 @app.put('/wishlist')
@@ -174,12 +178,13 @@ def remove_from_wishlist(product_id: int,
     return {'Successfully removed product from wishlist.'}
 
 
-@app.get('/cart')
-def show_cart(logged_id : str | None = Cookie(default=None, include_in_schema=False),
+@app.get('/cart', response_class=HTMLResponse)
+def show_cart(request: Request,
+              logged_id : str | None = Cookie(default=None, include_in_schema=False),
               db: Session = Depends(get_db)):
     is_logged_in(db, logged_id)
-    cart = db.query(Cart.product_id).filter(Cart.user_id == int(logged_id)).all()
-    return {'wishlist': [cart_product.product_id for cart_product in cart]}
+    cart = db.query(Cart).filter(Cart.user_id == int(logged_id)).all()
+    return templates.TemplateResponse(request=request, name="cart.html", context={"cart": cart})
 
 
 @app.put('/cart')
@@ -292,3 +297,7 @@ def purchase_products(confirmation: bool,
         return {'Canceled transaction.'}
 
 
+@app.get('/recommendations', response_class=HTMLResponse)
+def show_recommendations(request: Request):
+    return templates.TemplateResponse(request=request, name="recommendations.html",
+                                      context={"request": request})
