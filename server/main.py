@@ -9,12 +9,8 @@ from sqlalchemy.orm import Session
 
 from models import User, Wishlist, Product, Cart, Purchase, Review
 from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
-
 from database import SessionLocal
-from fake_database import users, products, password_reset_tokens
-
 from datetime import datetime, timezone, timedelta
-
 from dotenv import load_dotenv
 
 app = FastAPI()
