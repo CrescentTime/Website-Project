@@ -71,10 +71,11 @@ def login(username: str = Form(), password: str = Form(),
         raise HTTPException(status_code=404, detail="Invalid username or password. Try again.")
 
 
-@app.get('/logout')
-def logout(response: Response):
+@app.get('/logout', response_class=HTMLResponse)
+def logout():
+    response = RedirectResponse(url="/", status_code=303)
     response.delete_cookie(key = "logged_id")
-    return {'Logout Successful': True}
+    return response
 
 
 @app.post('/signup')
