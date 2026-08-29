@@ -6,11 +6,15 @@
 </head>
 <body>
 <h1>Login</h1>
-<label>Username:</label>
-<input type="text" name="username" id="username"><br><br>
-<label>Password:</label>
-<input type="text" name="username" id="password"><br><br>
-<button onclick="login()">Login</button>
-<button onclick="reset_password()">Reset Password</button>
+<form action="/login" method="post">
+    <label>Username:</label>
+    <input type="text" name="username" id="username" required><br><br>
+    <label>Password:</label>
+    <input type="text" name="password" id="password" required><br><br>
+    <button type="submit">Login</button>
+</form>
+<form action="/reset_password" method="get">
+    <button onclick=reset_password()>Reset Password</button>
+</form>
 </body>
 </html>
