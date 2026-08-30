@@ -46,6 +46,17 @@ def is_logged_in(db: Session,
     return True
 
 
+def is_token_valid(token: str | None):
+    try:
+        decoded = jwt.decode(token, key=reset_pass_signature,
+                             algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        return False, None
+    except jwt.InvalidTokenError:
+        return False, None
+    return True, decoded
+
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: Session = Depends(get_db)):
     products = db.query(Product).all()
@@ -104,7 +115,7 @@ def reset_password(username: str, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == username).first()
     if user:
         payload = {"user_id": user.id,
-                   "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=10)}
+                   "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=2)}
         token = jwt.encode(payload=payload, key=reset_pass_signature,algorithm="HS256")
         return {"message:": 'Sent email to reset password if the user exists.',
                 "To: ": user.email,
@@ -112,24 +123,40 @@ def reset_password(username: str, db: Session = Depends(get_db)):
     return {'Sent email to reset password if the user exists.'}
 
 
-@app.put('/change_password')
-def change_password(new_password: str,
+@ app.get('/invalid_reset_password_token', response_class=HTMLResponse)
+def invalid_reset_password_token(request: Request):
+    return templates.TemplateResponse(request=request, name="invalid_reset_password_token.html")
+
+
+@app.get('/change_password', response_class=HTMLResponse)
+def change_password_page(request: Request, token: str | None,
+                         logged_id: str | None = Cookie(default=None, include_in_schema=False)):
+    token_validity = True
+    if logged_id is None:
+        token_validity, _ = is_token_valid(token)
+    if not token_validity:
+        return RedirectResponse(url="/invalid_reset_password_token", status_code=303)
+    return templates.TemplateResponse(request=request, name="change_password.html",
+                                      context={'token': token})
+
+
+@app.post('/change_password')
+def change_password(new_password: str = Form(),
                     logged_id: str | None = Cookie(default=None, include_in_schema=False),
-                    token: str | None = '',
+                    token: str | None = Form(),
                     db: Session = Depends(get_db)):
     uid = logged_id
     if uid is None:
-        try:
-            decoded = jwt.decode(token, key=reset_pass_signature,
-                                 algorithms=["HS256"])
-        except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=404, detail="Expired reset link, request a new one.")
-        uid = decoded["user_id"]
+        token_validity, decoded = is_token_valid(token)
+        if token_validity:
+            uid = decoded["user_id"]
+        else:
+            return {'message': 'Password reset link has expired or is invalid. Please request a new link.'}
     user = db.get(User, int(uid))
     user.password = new_password
     db.commit()
     db.refresh(user)
-    return {'Successfully changed password.'}
+    return {'message': 'Successfully changed password.'}
 
 
 @app.put('/change_username')
