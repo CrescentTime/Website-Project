@@ -69,7 +69,7 @@ def login_page(request: Request):
     return templates.TemplateResponse(request=request, name="login.html")
 
 
-@app.post('/login', response_class=HTMLResponse)
+@app.post('/login')
 def login(username: str = Form(), password: str = Form(),
           db: Session = Depends(get_db)):
     user = db.scalars(select(User.id).where(User.username == username,
@@ -79,7 +79,7 @@ def login(username: str = Form(), password: str = Form(),
         response.set_cookie(key = "logged_id", value = str(user))
         return response
     else:
-        raise HTTPException(status_code=404, detail="Invalid username or password. Try again.")
+        return {"login_error": "Invalid username or password. Try again."}
 
 
 @app.get('/logout', response_class=HTMLResponse)
@@ -117,10 +117,10 @@ def reset_password(username: str, db: Session = Depends(get_db)):
         payload = {"user_id": user.id,
                    "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=2)}
         token = jwt.encode(payload=payload, key=reset_pass_signature,algorithm="HS256")
-        return {"message:": 'Sent email to reset password if the user exists.',
-                "To: ": user.email,
-                "Reset Link: ": "http://127.0.0.1:8000/change_password?token=" + token}
-    return {'Sent email to reset password if the user exists.'}
+        return {"reset_message": f'Sent email to reset password if the user exists.\n'
+                                  f'To: {user.email}\n'
+                                  f'Reset Link: http://127.0.0.1:8000/change_password?token={token}'}
+    return {'reset_message': 'Sent email to reset password if the user exists.'}
 
 
 @ app.get('/invalid_reset_password_token', response_class=HTMLResponse)
