@@ -33,3 +33,7 @@ reset_password_form.addEventListener('submit', async (e) => {
     const result = await response.json();
     reset_message.innerText = result.reset_message;
 });
+
+function go_to_signup() {
+    window.location.href = '/signup';
+}

@@ -32,7 +32,8 @@ def get_db():
 
 def does_username_exist(username: str, db: Session):
     if db.query(User).filter(User.username == username).first():
-        raise HTTPException(status_code=400, detail="Username already exists")
+        return True
+    return False
 
 
 def is_logged_in(db: Session, 
@@ -89,14 +90,21 @@ def logout():
     return response
 
 
+@app.get('/signup', response_class=HTMLResponse)
+def signup_page(request: Request):
+    return templates.TemplateResponse(request=request, name="signup.html")
+
+
 @app.post('/signup')
-def create_user(new_user: CreateUser, db: Session = Depends(get_db)):
-    does_username_exist(new_user.username, db)
+def create_user(new_user: CreateUser = Form(), db: Session = Depends(get_db)):
+    exists = does_username_exist(new_user.username, db)
+    if exists:
+        return {'username_error': 'Username already exists.'}
     user = User(username=new_user.username, email=new_user.email, password=new_user.password)
     db.add(user)
     db.commit()
     db.refresh(user)
-    return user
+    return RedirectResponse(url="/login", status_code=303)
 
 
 @app.get('/user_profile', response_class=HTMLResponse)
