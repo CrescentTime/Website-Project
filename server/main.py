@@ -137,7 +137,7 @@ def invalid_reset_password_token(request: Request):
 
 
 @app.get('/change_password', response_class=HTMLResponse)
-def change_password_page(request: Request, token: str | None,
+def change_password_page(request: Request, token: str | None = None,
                          logged_id: str | None = Cookie(default=None, include_in_schema=False)):
     token_validity = True
     if logged_id is None:
@@ -167,20 +167,20 @@ def change_password(new_password: str = Form(),
     return {'message': 'Successfully changed password.'}
 
 
-@app.put('/change_username')
-def change_username(username: str,
-                    request: Request,
+@app.post('/change_username')
+def change_username(request: Request,
+                    username: str = Form(),
                     logged_id: str | None = Cookie(default=None, include_in_schema=False),
                     db: Session = Depends(get_db)):
     if not is_logged_in(db, request, logged_id):
         return RedirectResponse(url="/login", status_code=302)
     existing_name = db.query(User).filter(User.username == username).first()
     if existing_name is not None:
-        raise HTTPException(status_code=404, detail="Username is taken. Select another one.")
+        return {'username_message': "Username is taken. Select another one."}
     user = db.get(User, int(logged_id))
     user.username = username
     db.commit()
-    return {'Successfully changed username.'}
+    return {'username_message': 'Successfully changed username.'}
 
 
 @app.get('/wishlist', response_class=HTMLResponse)
