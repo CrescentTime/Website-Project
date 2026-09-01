@@ -28,6 +28,14 @@ class ReadProduct(BaseModel):
         from_attributes = True
 
 
+class PurchasedProduct(BaseModel):
+    name: str
+    purchase_date: str
+    img_path: str
+    class Config:
+        from_attributes = True
+
+
 class ReadTag(BaseModel):
     id: int
     name: str

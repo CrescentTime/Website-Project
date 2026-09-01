@@ -114,6 +114,7 @@ def read_user(request: Request,
     if not is_logged_in(db, request, logged_id):
         return RedirectResponse(url="/login", status_code=303)
     user = db.query(User).filter(User.id == logged_id).first()
+    user = ReadUser.model_validate(user)
     context = {"user": user}
     return templates.TemplateResponse(request=request, name="user_profile.html", context=context)
 

@@ -15,8 +15,9 @@
     <a href="/cart">Cart</a>
 </div>
 <div class="page-content">
-    <button onclick="go_to_change_password()">Change Password</button>
-    <button onclick="open_username_form()">Change Username</button><br><br>
+    <h2>Welcome, {{user.username}}!</h2>
+    <button onclick="go_to_change_password()">Change Password</button><br><br>
+    <button onclick="open_username_form()">Change Username</button><br>
     <div id="username_div" class="popup-form">
         <form action="/change_username" method="post" class="form-container" id="username_form">
             Enter your new username.<br><br>
