@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Page</title>
+</head>
+<body>
+<div class="topnav">
+    <a style="float: left" href="/">Home</a>
+    <a style="float: left" href="/recommendations">Recommendations</a>
+    <input type="search" name="search" placeholder="Search">
+    <a href="/user_profile">User Profile</a>
+    <a href="/wishlist">Wishlist</a>
+    <a href="/cart">Cart</a>
+</div>
+<div class="page-content">
+    <h1>{product.name}</h1>
+    <img src="{{url_for('assets', path='/' ~ product.img_path)}}" />
+    <p>Short Summary: </p>
+    <pre>{product.short_description}</pre>
+    <p>Price: {product.price}</p>
+    <pre>Full Description: {product.full_description}</pre>
+    <button id="cart_button">Add to Cart</button>
+    <button id="wishlist_button">Add to wishlist</button>
+    <p id="cart_message"></p>
+    <p id="wishlist_message"></p>
+</div>
+<script src="assets/js/product_page.js"></script>
+</body>
+</html>

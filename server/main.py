@@ -5,10 +5,10 @@ from fastapi import FastAPI, Depends, HTTPException, Cookie, Response, Request, 
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import select, Date, func
+from sqlalchemy import select, Date, func, and_
 from sqlalchemy.orm import Session
 
-from models import User, Wishlist, Product, Cart, Purchase, Review
+from models import User, Wishlist, Product, Cart, Purchase, Review, Tag, ProductTag
 from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
 from database import SessionLocal
 from datetime import datetime, timezone, timedelta
@@ -190,11 +190,12 @@ def show_wishlist(request: Request,
                   db: Session = Depends(get_db)):
     if not is_logged_in(db, request, logged_id):
         return RedirectResponse(url="/login", status_code=302)
-    wishlist = db.query(Wishlist.product_id).filter(Wishlist.user_id == int(logged_id)).all()
-    return templates.TemplateResponse(request=request, name="wishlist.html", context={"wishlist": wishlist})
+    products = (db.query(Wishlist).filter(Wishlist.user_id == int(logged_id)).
+                join(Product, and_(Product.id == Wishlist.product_id)).all())
+    return templates.TemplateResponse(request=request, name="wishlist.html", context={"wishlist": products})
 
 
-@app.put('/wishlist')
+@app.post('/wishlist')
 def add_to_wishlist(product_id: int,
                     request: Request,
                     logged_id: str | None = Cookie(default=None, include_in_schema=False),
@@ -204,16 +205,16 @@ def add_to_wishlist(product_id: int,
     product_in_wishlist = db.query(Wishlist).filter(Wishlist.product_id == product_id,
                                                  Wishlist.user_id == int(logged_id)).first()
     if product_in_wishlist is not None:
-        raise HTTPException(status_code=404, detail="Product is already wishlisted.")
+        return {"wishlist_message": "Product is already wishlisted."}
     product_in_purchases = db.query(Purchase).filter(Purchase.product_id == product_id,
                                                      Purchase.user_id == int(logged_id)).first()
     if product_in_purchases is not None:
-        raise HTTPException(status_code=404, detail="You already own this product.")
+        return {"wishlist_message": "You already own this product."}
     added_product = Wishlist(product_id=product_id, user_id=int(logged_id))
     db.add(added_product)
     db.commit()
     db.refresh(added_product)
-    return {'Successfully added product to wishlist.'}
+    return {"wishlist_message": 'Successfully added product to wishlist.'}
 
 
 @app.delete('/wishlist')
@@ -242,7 +243,7 @@ def show_cart(request: Request,
     return templates.TemplateResponse(request=request, name="cart.html", context={"cart": cart})
 
 
-@app.put('/cart')
+@app.post('/cart')
 def add_to_cart(product_id: int,
                 request: Request,
                 logged_id : str | None = Cookie(default=None, include_in_schema=False),
@@ -252,16 +253,16 @@ def add_to_cart(product_id: int,
     product_in_cart = db.query(Cart).filter(Cart.product_id == product_id,
                                             Cart.user_id == int(logged_id)).first()
     if product_in_cart is not None:
-        raise HTTPException(status_code=404, detail="Product is already in the cart.")
+        return {"cart_message": "Product is already in the cart."}
     product_in_purchases = db.query(Purchase).filter(Purchase.product_id == product_id,
                                                      Purchase.user_id == int(logged_id)).first()
     if product_in_purchases is not None:
-        raise HTTPException(status_code=404, detail="You already own this product.")
+        return {"cart_message": "You already own this product."}
     added_product = Cart(product_id=product_id, user_id=int(logged_id))
     db.add(added_product)
     db.commit()
     db.refresh(added_product)
-    return {'message': 'Successfully added product to cart.'}
+    return {'cart_message': 'Successfully added product to cart.'}
 
 
 @app.delete('/cart')
