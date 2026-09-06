@@ -196,12 +196,12 @@ def show_wishlist(request: Request,
 
 
 @app.post('/wishlist')
-def add_to_wishlist(product_id: int,
-                    request: Request,
+def add_to_wishlist(request: Request,
+                    product_id: int = Form(),
                     logged_id: str | None = Cookie(default=None, include_in_schema=False),
                     db: Session = Depends(get_db)):
     if not is_logged_in(db, request, logged_id):
-        return RedirectResponse(url="/login", status_code=302)
+        return RedirectResponse(url="/login", status_code=303)
     product_in_wishlist = db.query(Wishlist).filter(Wishlist.product_id == product_id,
                                                  Wishlist.user_id == int(logged_id)).first()
     if product_in_wishlist is not None:
@@ -244,12 +244,12 @@ def show_cart(request: Request,
 
 
 @app.post('/cart')
-def add_to_cart(product_id: int,
-                request: Request,
+def add_to_cart(request: Request,
+                product_id: int = Form(),
                 logged_id : str | None = Cookie(default=None, include_in_schema=False),
                 db: Session = Depends(get_db)):
     if not is_logged_in(db, request, logged_id):
-        return RedirectResponse(url="/login", status_code=302)
+        return RedirectResponse(url="/login", status_code=303)
     product_in_cart = db.query(Cart).filter(Cart.product_id == product_id,
                                             Cart.user_id == int(logged_id)).first()
     if product_in_cart is not None:
@@ -283,23 +283,13 @@ def remove_from_cart(product_id: int,
 
 @app.get('/products/{product_id}')
 def get_product(product_id: int,
+                request: Request,
                 logged_id : str | None = Cookie(default=None, include_in_schema=False),
                 db: Session = Depends(get_db)):
     product = db.query(Product).filter(Product.id == product_id).first()
-    if product is None:
-        raise HTTPException(status_code=404, detail="Product not found.")
-    product_info = {
-        "id": product.id,
-        "name": product.name,
-        "price": product.price,
-        "discount": product.discount,
-        "short_description": product.short_description,
-        "full_description": product.full_description,
-        "image_url": product.img_path
-    }
     if logged_id is None:
-        return {'product': product_info, 'write review': False}
-    return {'product': product_info, 'write review': True}
+        return templates.TemplateResponse(request=request, name="product_page.html", context={'product': product, 'write review': False})
+    return templates.TemplateResponse(request=request, name="product_page.html", context={'product': product, 'write review': True})
 
 
 @app.put('/products/{product_id}')

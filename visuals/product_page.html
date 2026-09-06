@@ -14,17 +14,23 @@
     <a href="/cart">Cart</a>
 </div>
 <div class="page-content">
-    <h1>{product.name}</h1>
+    <h1>{{product.name}}</h1>
     <img src="{{url_for('assets', path='/' ~ product.img_path)}}" />
     <p>Short Summary: </p>
-    <pre>{product.short_description}</pre>
-    <p>Price: {product.price}</p>
-    <pre>Full Description: {product.full_description}</pre>
-    <button id="cart_button">Add to Cart</button>
-    <button id="wishlist_button">Add to wishlist</button>
+    <pre>{{product.short_description}}</pre>
+    <p>Price: {{product.price}}</p>
+    <pre>Full Description: {{product.full_description}}</pre>
+    <form action="/cart" method="post" id="cart_form">
+        <input type="hidden" name="product_id" value="{{product.id}}" />
+        <button type="submit">Add to Cart</button>
+    </form>
+    <form action="/wishlist" method="post" id="wishlist_form">
+        <input type="hidden" name="product_id" value="{{product.id}}" />
+        <button type="submit">Add to Wishlist</button>
+    </form>
     <p id="cart_message"></p>
     <p id="wishlist_message"></p>
 </div>
-<script src="assets/js/product_page.js"></script>
+<script src="/assets/js/product_page.js"></script>
 </body>
 </html>
