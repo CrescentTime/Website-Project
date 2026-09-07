@@ -22,7 +22,7 @@ class ReadProduct(BaseModel):
     discount: float
     short_description: str
     full_description: str
-    image_url: str
+    img_path: str
 
     class Config:
         from_attributes = True

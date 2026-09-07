@@ -190,8 +190,8 @@ def show_wishlist(request: Request,
                   db: Session = Depends(get_db)):
     if not is_logged_in(db, request, logged_id):
         return RedirectResponse(url="/login", status_code=302)
-    products = (db.query(Wishlist).filter(Wishlist.user_id == int(logged_id)).
-                join(Product, and_(Product.id == Wishlist.product_id)).all())
+    products = ((db.query(Product).filter(Product.id == Wishlist.product_id)).
+                join(Wishlist).filter(Wishlist.user_id == int(logged_id)).all())
     return templates.TemplateResponse(request=request, name="wishlist.html", context={"wishlist": products})
 
 
