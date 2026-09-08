@@ -15,19 +15,23 @@
     <a href="/cart">Cart</a>
 </div>
 <div class="page-content">
-    {% for product in wishlist %}
+    {% for w_product in wishlist %}
     <table style="width:25%; margin-left: auto; margin-right: auto;">
         <tr>
-            <th rowspan="2"><img src="{{url_for('assets', path='/' ~ product.img_path)}}" alt="" height=200 width=300></th>
+            <th rowspan="2"><img src="{{url_for('assets', path='/' ~ w_product.img_path)}}" alt="" height=200 width=300></th>
             <th>
-                <div style="vertical-align: top; text-align: left">{{product.name}}</div>
+                <div style="vertical-align: top; text-align: left">{{w_product.name}}</div>
             </th>
             <th>
-                <div style="vertical-align: top; text-align: left">Price: {{product.price}}</div>
+                <div style="vertical-align: top; text-align: left">Price: {{w_product.price}}</div>
+            </th>
+            <th>
+                <button type="button" onclick="remove_product({{w_product.id}})">Remove</button>
             </th>
         </tr>
     </table>
     {% endfor %}
 </div>
+<script src="/assets/js/wishlist.js"></script>
 </body>
 </html>

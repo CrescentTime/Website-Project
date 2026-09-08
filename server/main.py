@@ -9,7 +9,7 @@ from sqlalchemy import select, Date, func, and_
 from sqlalchemy.orm import Session
 
 from models import User, Wishlist, Product, Cart, Purchase, Review, Tag, ProductTag
-from schemas import CreateUser, ReadUser, ReadProduct, ReadTag
+from schemas import CreateUser, ReadUser, ReadProduct, ReadTag, ProductRequest
 from database import SessionLocal
 from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
@@ -218,19 +218,20 @@ def add_to_wishlist(request: Request,
 
 
 @app.delete('/wishlist')
-def remove_from_wishlist(product_id: int,
+def remove_from_wishlist(data: ProductRequest,
                          request: Request,
                          logged_id: str | None = Cookie(default=None, include_in_schema=False),
                          db: Session = Depends(get_db)):
     if not is_logged_in(db, request, logged_id):
-        return RedirectResponse(url="/login", status_code=302)
+        return RedirectResponse(url="/login", status_code=303)
+    product_id = data.product_id
     product_in_wishlist = db.query(Wishlist).filter(Wishlist.product_id == product_id,
                                                     Wishlist.user_id == int(logged_id)).first()
     if product_in_wishlist is None:
-        raise HTTPException(status_code=404, detail="Product is not in the wishlist.")
+        return {'wishlist_message': "Product is not in the wishlist."}
     db.delete(product_in_wishlist)
     db.commit()
-    return {'Successfully removed product from wishlist.'}
+    return {'wishlist_message': 'Successfully removed product from wishlist.'}
 
 
 @app.get('/cart', response_class=HTMLResponse)

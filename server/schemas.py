@@ -42,3 +42,7 @@ class ReadTag(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ProductRequest(BaseModel):
+    product_id: int
