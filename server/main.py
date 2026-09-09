@@ -240,8 +240,9 @@ def show_cart(request: Request,
               db: Session = Depends(get_db)):
     if not is_logged_in(db, request, logged_id):
         return RedirectResponse(url="/login", status_code=302)
-    cart = db.query(Cart).filter(Cart.user_id == int(logged_id)).all()
-    return templates.TemplateResponse(request=request, name="cart.html", context={"cart": cart})
+    products = ((db.query(Product).filter(Product.id == Cart.product_id)).
+                join(Cart).filter(Cart.user_id == int(logged_id)).all())
+    return templates.TemplateResponse(request=request, name="cart.html", context={"cart": products})
 
 
 @app.post('/cart')
@@ -267,16 +268,17 @@ def add_to_cart(request: Request,
 
 
 @app.delete('/cart')
-def remove_from_cart(product_id: int,
+def remove_from_cart(data: ProductRequest,
                      request: Request,
                      logged_id : str | None = Cookie(default=None, include_in_schema=False),
                      db: Session = Depends(get_db)):
     if not is_logged_in(db, request, logged_id):
         return RedirectResponse(url="/login", status_code=302)
+    product_id = data.product_id
     product_in_cart = db.query(Cart).filter(Cart.product_id == product_id,
                                             Cart.user_id == int(logged_id)).first()
     if product_in_cart is None:
-        raise HTTPException(status_code=404, detail="Product is not in the cart.")
+        return {'message': "Product is not in the cart."}
     db.delete(product_in_cart)
     db.commit()
     return {'message': 'Successfully removed product from cart.'}

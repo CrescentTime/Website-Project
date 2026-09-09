@@ -14,8 +14,24 @@
     <a href="/wishlist">Wishlist</a>
     <a href="/cart">Cart</a>
 </div>
-{% for cart_product in cart %}
-Name:
-{% endfor %}
+<div class="page-content">
+    {% for cart_product in cart %}
+    <table style="width:25%; margin-left: auto; margin-right: auto;">
+        <tr>
+            <th rowspan="2"><img src="{{url_for('assets', path='/' ~ cart_product.img_path)}}" alt="" height=200 width=300></th>
+            <th>
+                <div style="vertical-align: top; text-align: left">{{cart_product.name}}</div>
+            </th>
+            <th>
+                <div style="vertical-align: top; text-align: left">Price: {{cart_product.price}}</div>
+            </th>
+            <th>
+                <button type="button" onclick="remove_product('{{cart_product.id}}')">Remove</button>
+            </th>
+        </tr>
+    </table>
+    {% endfor %}
+</div>
+<script src="/assets/js/cart.js"></script>
 </body>
 </html>
