@@ -5,4 +5,5 @@ async function remove_product(product_id) {
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({product_id: product_id})
     });
+    window.location.reload();
 }
