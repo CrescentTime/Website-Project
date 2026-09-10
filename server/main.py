@@ -9,7 +9,7 @@ from sqlalchemy import select, Date, func, and_
 from sqlalchemy.orm import Session
 
 from models import User, Wishlist, Product, Cart, Purchase, Review, Tag, ProductTag
-from schemas import CreateUser, ReadUser, ReadProduct, ReadTag, ProductRequest
+from schemas import CreateUser, ReadUser, ReadProduct, ReadTag, ProductRequest, ConfirmationRequest
 from database import SessionLocal
 from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
@@ -242,7 +242,10 @@ def show_cart(request: Request,
         return RedirectResponse(url="/login", status_code=302)
     products = ((db.query(Product).filter(Product.id == Cart.product_id)).
                 join(Cart).filter(Cart.user_id == int(logged_id)).all())
-    return templates.TemplateResponse(request=request, name="cart.html", context={"cart": products})
+    total = 0
+    for product in products:
+        total += product.price
+    return templates.TemplateResponse(request=request, name="cart.html", context={"cart": products, "total": total})
 
 
 @app.post('/cart')
@@ -328,16 +331,16 @@ def add_review(product_id: int,
 
 
 @app.post('/purchase')
-def purchase_products(confirmation: bool,
+def purchase_products(confirmation_request: ConfirmationRequest,
                       request: Request,
                       logged_id : str | None = Cookie(default=None, include_in_schema=False),
                       db: Session = Depends(get_db)):
     if not is_logged_in(db, request, logged_id):
         return RedirectResponse(url="/login", status_code=302)
-    if confirmation:
+    if confirmation_request.confirmation:
         cart = db.query(Cart).filter(Cart.user_id == int(logged_id)).all()
-        if cart is None:
-            raise HTTPException(status_code=404, detail="Cart is empty.")
+        if not cart:
+            return {'purchase_message': "Cart is empty."}
         for cart_product in cart:
             purchased_product = Purchase(product_id=cart_product.product_id,user_id=int(logged_id),
                                          purchase_date=func.current_date())
@@ -349,9 +352,9 @@ def purchase_products(confirmation: bool,
             db.delete(cart_product)
             db.commit()
             db.refresh(purchased_product)
-        return {'Successfully purchased products.'}
+        return {'purchase_message': 'Successfully purchased products.'}
     else:
-        return {'Canceled transaction.'}
+        return {'purchase_message': 'Canceled transaction.'}
 
 
 @app.get('/recommendations', response_class=HTMLResponse)

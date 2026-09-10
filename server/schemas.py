@@ -46,3 +46,7 @@ class ReadTag(BaseModel):
 
 class ProductRequest(BaseModel):
     product_id: int
+
+
+class ConfirmationRequest(BaseModel):
+    confirmation: bool
