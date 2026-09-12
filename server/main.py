@@ -115,7 +115,11 @@ def read_user(request: Request,
         return RedirectResponse(url="/login", status_code=303)
     user = db.query(User).filter(User.id == logged_id).first()
     user = ReadUser.model_validate(user)
-    context = {"user": user}
+    statement = (select(Product.name, Product.img_path, Purchase.purchase_date).
+                 join(Purchase, Product.id == Purchase.product_id).
+                 where(Purchase.user_id == logged_id))
+    purchases = db.execute(statement).mappings().all()
+    context = {"user": user, 'purchases': purchases}
     return templates.TemplateResponse(request=request, name="user_profile.html", context=context)
 
 
@@ -336,7 +340,7 @@ def purchase_products(confirmation_request: ConfirmationRequest,
                       logged_id : str | None = Cookie(default=None, include_in_schema=False),
                       db: Session = Depends(get_db)):
     if not is_logged_in(db, request, logged_id):
-        return RedirectResponse(url="/login", status_code=302)
+        return RedirectResponse(url="/login", status_code=303)
     if confirmation_request.confirmation:
         cart = db.query(Cart).filter(Cart.user_id == int(logged_id)).all()
         if not cart:

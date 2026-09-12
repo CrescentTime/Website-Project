@@ -27,7 +27,23 @@
         </form>
         <p id="username_message"></p>
     </div>
+    <div>
+        <h1>Your Purchases</h1>
+        {% for product in purchases %}
+        <table style="width:25%; margin-left: auto; margin-right: auto;">
+            <tr>
+                <th rowspan="2"><img src="{{url_for('assets', path='/' ~ product.img_path)}}" alt="" height=200 width=300></th>
+                <th>
+                    <div style="vertical-align: top; text-align: left">{{product.name}}</div>
+                    <div style="text-align: left; white-space: pre-line; float: left">
+                        Purchase Date: {{product.purchase_date}}
+                    </div>
+                </th>
+            </tr>
+        </table>
+        {% endfor %}
+    </div>
 </div>
-<script src="assets/js/user_profile.js"></script>
+<script src="/assets/js/user_profile.js"></script>
 </body>
 </html>
