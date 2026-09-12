@@ -31,6 +31,17 @@
     </form>
     <p id="cart_message"></p>
     <p id="wishlist_message"></p>
+
+    <h2>Reviews</h2>
+    {% for review in reviews %}
+    <div class="review" style="border: 1px solid black;">
+        <pre style="font-size: large"> User: {{review.username}}</pre>
+        <pre style="font-size: large"> Recommendation: {{review.review_recommendation}}</pre>
+        <pre style="font-size: large"> Date: {{review.review_date}}</pre>
+        <pre style="font-size: large"> {{review.review_details}}</pre>
+    </div>
+    <br>
+    {% endfor %}
 </div>
 <script src="/assets/js/product_page.js"></script>
 </body>

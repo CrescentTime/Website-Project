@@ -297,9 +297,15 @@ def get_product(product_id: int,
                 logged_id : str | None = Cookie(default=None, include_in_schema=False),
                 db: Session = Depends(get_db)):
     product = db.query(Product).filter(Product.id == product_id).first()
+    statement = (select(Review.review_details, Review.review_recommendation, Review.review_date, User.username).
+                 join(User, User.id == Review.user_id).
+                 where(Review.product_id == product_id))
+    reviews = db.execute(statement).mappings().all()
     if logged_id is None:
-        return templates.TemplateResponse(request=request, name="product_page.html", context={'product': product, 'write review': False})
-    return templates.TemplateResponse(request=request, name="product_page.html", context={'product': product, 'write review': True})
+        return templates.TemplateResponse(request=request, name="product_page.html",
+                                          context={'product': product, 'reviews': reviews, 'write review': False})
+    return templates.TemplateResponse(request=request, name="product_page.html",
+                                      context={'product': product, 'reviews': reviews, 'write review': True})
 
 
 @app.put('/products/{product_id}')
