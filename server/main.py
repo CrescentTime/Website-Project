@@ -303,21 +303,21 @@ def get_product(product_id: int,
     reviews = db.execute(statement).mappings().all()
     if logged_id is None:
         return templates.TemplateResponse(request=request, name="product_page.html",
-                                          context={'product': product, 'reviews': reviews, 'write review': False})
+                                          context={'product': product, 'reviews': reviews, 'write_review': False})
     return templates.TemplateResponse(request=request, name="product_page.html",
-                                      context={'product': product, 'reviews': reviews, 'write review': True})
+                                      context={'product': product, 'reviews': reviews, 'write_review': True})
 
 
-@app.put('/products/{product_id}')
-def add_review(product_id: int,
-               review: str,
-               review_recommendation: str,
-               request: Request,
+@app.post('/products/{product_id}')
+def add_review(request: Request,
+               product_id: int,
+               review: str = Form(),
+               review_recommendation: str = Form(),
                logged_id : str | None = Cookie(default=None, include_in_schema=False),
                db: Session = Depends(get_db)):
     if not is_logged_in(db, request, logged_id):
-        return RedirectResponse(url="/login", status_code=302)
-    product = db.query(Product).filter(Product.id == product_id)
+        return RedirectResponse(url="/login", status_code=303)
+    product = db.query(Product).filter(Product.id == product_id).first()
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found.")
     product_in_purchases = db.query(Purchase).filter(Purchase.product_id == product_id,
@@ -337,7 +337,7 @@ def add_review(product_id: int,
         product_review.review_date = func.current_date()
     db.commit()
     db.refresh(product_review)
-    return 'Successfully reviewed the product.'
+    return {'message': 'Successfully reviewed the product.'}
 
 
 @app.post('/purchase')

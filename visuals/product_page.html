@@ -31,6 +31,26 @@
     </form>
     <p id="cart_message"></p>
     <p id="wishlist_message"></p>
+    {% if write_review %}
+    <button id="write_review_button" onclick="open_review_form()">Write Review</button>
+    {% endif %}
+    <div id="review_div" class="popup-form">
+        <form action="/products/{product_id}" method="post" id="review_form" class="form-container">
+            <input type="hidden" name="product_id" value="{{product.id}}" />
+
+            <label for="recommendation">Recommendation:</label><br>
+            <select name="review_recommendation" id="recommendation" required>
+                <option value="Recommend">Recommend</option>
+                <option value="Neutral">Neutral</option>
+                <option value="Not Recommend">Not Recommend</option>
+            </select><br><br>
+
+            <label for="review">Your Review:</label><br>
+            <textarea name="review" id="review" cols="100" rows="10" required></textarea>
+            <button type="submit">Submit Review</button>
+        </form>
+        <p id="message"></p>
+    </div>
 
     <h2>Reviews</h2>
     {% for review in reviews %}

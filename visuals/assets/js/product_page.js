@@ -1,3 +1,29 @@
+function open_review_form() {
+    const div = document.getElementById("review_div");
+    if (getComputedStyle(div).display === "none") {
+        div.style.display = "block";
+    }
+    else {
+        div.style.display = "none";
+    }
+}
+
+const review_form = document.getElementById("review_form");
+const message = document.getElementById("message");
+
+review_form.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const form_data = new FormData(review_form);
+    const pid = form_data.get("product_id");
+    const response = await fetch(`/products/${pid}`, {
+        method: 'POST',
+        body: form_data,
+    });
+
+    const result = await response.json();
+    message.innerText = result.message;
+});
+
 const cart_form = document.getElementById('cart_form');
 const cart_message = document.getElementById('cart_message');
 
