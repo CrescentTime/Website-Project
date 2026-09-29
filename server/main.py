@@ -14,6 +14,7 @@ from database import SessionLocal
 from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 from starlette.staticfiles import StaticFiles
+from recommendation_system import get_request_recommendation
 
 app = FastAPI()
 app.mount('/assets', StaticFiles(directory='visuals/assets'), name='assets')
@@ -368,6 +369,16 @@ def purchase_products(confirmation_request: ConfirmationRequest,
 
 
 @app.get('/recommendations', response_class=HTMLResponse)
-def show_recommendations(request: Request):
+def show_recommendations(request: Request, db: Session = Depends(get_db)):
+    products = db.query(Product).all()
     return templates.TemplateResponse(request=request, name="recommendations.html",
-                                      context={"request": request})
+                                      context={"products": products})
+
+
+@app.post('/recommendations', response_class=HTMLResponse)
+def recommendation_request(request: Request, query: str = Form(), db: Session = Depends(get_db)):
+    recommendation_ids = get_request_recommendation(query)
+    products = db.query(Product).all()
+    products = sorted(products, key=lambda p: recommendation_ids.index(p.id))
+    return templates.TemplateResponse(request=request, name="recommendations.html",
+                                      context={"products": products})

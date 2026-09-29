@@ -5,7 +5,7 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 PRODUCTS_PATH = 'C:/Users/Yam/Documents/Work Related/Website-Project/Products.csv'
-PRODUCTS_EMBEDDINGS_PATH = 'embeddings.csv'
+PRODUCTS_EMBEDDINGS_PATH = 'server/embeddings.csv'
 
 
 def create_embedding_text(df: pd.DataFrame):
@@ -27,7 +27,7 @@ def embed_products():
     embeddings_df.to_csv(PRODUCTS_EMBEDDINGS_PATH, index=False)
 
 
-def request_based_recommendation(query: str):
+def get_request_recommendation(query: str):
     df = pd.read_csv(PRODUCTS_EMBEDDINGS_PATH, converters={"embeddings": json.loads})
     products_embeddings = np.vstack(df['embeddings'].to_numpy())
     model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
@@ -36,9 +36,9 @@ def request_based_recommendation(query: str):
     recommendations_ranks = df[["id"]].copy()
     recommendations_ranks["score"] = scores
     recommendations_ranks = recommendations_ranks.sort_values("score", ascending=False)
-    return recommendations_ranks
+    return recommendations_ranks["id"].to_list()
 
 
 if __name__ == '__main__':
     #embed_products()
-    print(request_based_recommendation('I want to go on an adventure'))
+    print(get_request_recommendation('I want to go on an adventure'))

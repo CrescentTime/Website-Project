@@ -14,5 +14,34 @@
     <a href="/wishlist">Wishlist</a>
     <a href="/cart">Cart</a>
 </div>
+<div class="page-content">
+    <form id="rec_form" action="/recommendations" method="post">
+        <label for="query">Type a request for recommendations:</label><br>
+        <textarea name="query" id="query" cols="100" rows="10" required></textarea>
+        <button type="submit">Get Recommendations</button>
+    </form>
+    <br><br>
+    {% for product in products %}
+    <table id="rec_table" style="width:25%; margin-left: auto; margin-right: auto;">
+        <tr>
+            <th rowspan="2"><img src="{{url_for('assets', path='/' ~ product.img_path)}}" alt="" height=200 width=300></th>
+            <th>
+                <div style="vertical-align: top; text-align: left">{{product.name}}</div>
+                <div style="text-align: left; white-space: pre-line; float: left">
+                    Short Description:
+                    {{product.short_description}}
+                </div>
+            </th>
+            <th>
+                <div style="vertical-align: top; text-align: left">Price: {{product.price}}</div>
+            </th>
+            <th>
+                <a href="/products/{{product.id}}">Go to page</a>
+            </th>
+        </tr>
+    </table>
+    {% endfor %}
+</div>
+<script src="/assets/js/recommendations.js"></script>
 </body>
 </html>
