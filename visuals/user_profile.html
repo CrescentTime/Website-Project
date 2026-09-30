@@ -29,17 +29,19 @@
     </div>
     <div>
         <h1>Your Purchases</h1>
-        {% for product in purchases %}
+
         <table style="width:25%; margin-left: auto; margin-right: auto;">
+            {% for product in purchases %}
             <tr>
-                <th rowspan="2"><img src="{{url_for('assets', path='/' ~ product.img_path)}}" alt="" height=200 width=300></th>
-                <th>
+                <td><img src="{{url_for('assets', path='/' ~ product.img_path)}}" alt="" height=200 width=300></td>
+                <td>
                     <div style="vertical-align: top; text-align: left">{{product.name}}</div>
                     <div style="text-align: left; white-space: pre-line; float: left">
                         Purchase Date: {{product.purchase_date}}
                     </div>
-                </th>
+                </td>
             </tr>
+            {% for product in purchases %}
         </table>
         {% endfor %}
     </div>

@@ -21,26 +21,28 @@
         <button type="submit">Get Recommendations</button>
     </form>
     <br><br>
-    {% for product in products %}
+
     <table id="rec_table" style="width:25%; margin-left: auto; margin-right: auto;">
+        {% for product in products %}
         <tr>
-            <th rowspan="2"><img src="{{url_for('assets', path='/' ~ product.img_path)}}" alt="" height=200 width=300></th>
-            <th>
+            <td><img src="{{url_for('assets', path='/' ~ product.img_path)}}" alt="" height=200 width=300></td>
+            <td>
                 <div style="vertical-align: top; text-align: left">{{product.name}}</div>
                 <div style="text-align: left; white-space: pre-line; float: left">
                     Short Description:
                     {{product.short_description}}
                 </div>
-            </th>
-            <th>
+            </td>
+            <td>
                 <div style="vertical-align: top; text-align: left">Price: {{product.price}}</div>
-            </th>
-            <th>
+            </td>
+            <td>
                 <a href="/products/{{product.id}}">Go to page</a>
-            </th>
+            </td>
         </tr>
+        {% endfor %}
     </table>
-    {% endfor %}
+
 </div>
 <script src="/assets/js/recommendations.js"></script>
 </body>

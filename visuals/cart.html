@@ -15,22 +15,24 @@
     <a href="/cart">Cart</a>
 </div>
 <div class="page-content">
-    {% for cart_product in cart %}
+
     <table style="width:25%; margin-left: auto; margin-right: auto;">
+        {% for cart_product in cart %}
         <tr>
-            <th rowspan="2"><img src="{{url_for('assets', path='/' ~ cart_product.img_path)}}" alt="" height=200 width=300></th>
-            <th>
+            <td><img src="{{url_for('assets', path='/' ~ cart_product.img_path)}}" alt="" height=200 width=300></td>
+            <td>
                 <div style="vertical-align: top; text-align: left">{{cart_product.name}}</div>
-            </th>
-            <th>
+            </td>
+            <td>
                 <div style="vertical-align: top; text-align: left">Price: {{cart_product.price}}</div>
-            </th>
-            <th>
+            </td>
+            <td>
                 <button type="button" onclick="remove_product('{{cart_product.id}}')">Remove</button>
-            </th>
+            </td>
         </tr>
+        {% endfor %}
     </table>
-    {% endfor %}
+
 </div>
 <div>
     <p style="text-align: center">Total Cost: {{total}}</p>
