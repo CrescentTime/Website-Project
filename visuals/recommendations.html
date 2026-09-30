@@ -22,7 +22,18 @@
     </form>
     <br><br>
 
+    <label>Minimum Price: </label>
+    <input type="number" id="min_price" name="min_price" min="0" onkeyup="min_max_filter()">
+    <label>Max Price: </label>
+    <input type="number" id="max_price" name="max_price" min="0" onkeyup="min_max_filter()">
+
     <table id="rec_table" style="width:25%; margin-left: auto; margin-right: auto;">
+        <tr>
+            <th>Image</th>
+            <th>Name and Description</th>
+            <th>Price</th>
+            <th>Link</th>
+        </tr>
         {% for product in products %}
         <tr>
             <td><img src="{{url_for('assets', path='/' ~ product.img_path)}}" alt="" height=200 width=300></td>
@@ -34,7 +45,7 @@
                 </div>
             </td>
             <td>
-                <div style="vertical-align: top; text-align: left">Price: {{product.price}}</div>
+                {{product.price}}
             </td>
             <td>
                 <a href="/products/{{product.id}}">Go to page</a>
